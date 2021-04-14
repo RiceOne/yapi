@@ -239,6 +239,7 @@ class projectController extends baseController {
         project_id: result._id,
         desc: '公共分类',
         uid: this.getUid(),
+        parent_id: 0,
         add_time: yapi.commons.time(),
         up_time: yapi.commons.time()
       });
@@ -590,7 +591,6 @@ class projectController extends baseController {
     } else {
       follow = follow.map(item => {
         item = item.toObject();
-        item._id = item.projectid
         item.follow = true;
         return item;
       });

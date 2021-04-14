@@ -3,7 +3,8 @@ import qs from 'qs';
 // Actions
 const INIT_INTERFACE_DATA = 'yapi/interface/INIT_INTERFACE_DATA';
 const FETCH_INTERFACE_DATA = 'yapi/interface/FETCH_INTERFACE_DATA';
-const FETCH_INTERFACE_LIST_MENU = 'yapi/interface/FETCH_INTERFACE_LIST_MENU';
+const FETCH_INTERFACE_MENU_TREE = 'yapi/interface/FETCH_INTERFACE_MENU_TREE';
+const FETCH_INTERFACE_MENU_LIST = 'yapi/interface/FETCH_INTERFACE_MENU_LIST';
 const DELETE_INTERFACE_DATA = 'yapi/interface/DELETE_INTERFACE_DATA';
 const DELETE_INTERFACE_CAT_DATA = 'yapi/interface/DELETE_INTERFACE_CAT_DATA';
 const UPDATE_INTERFACE_DATA = 'yapi/interface/UPDATE_INTERFACE_DATA';
@@ -39,7 +40,7 @@ export default (state = initialState, action) => {
         ...state,
         curdata: action.payload.data.data
       };
-    case FETCH_INTERFACE_LIST_MENU:
+    case FETCH_INTERFACE_MENU_TREE:
       return {
         ...state,
         list: action.payload.data.data
@@ -126,10 +127,18 @@ export async function fetchInterfaceData(interfaceId) {
   };
 }
 
-export async function fetchInterfaceListMenu(projectId) {
+export async function fetchInterfaceMenuList(projectId) {
   let result = await axios.get('/api/interface/list_menu?project_id=' + projectId);
   return {
-    type: FETCH_INTERFACE_LIST_MENU,
+    type: FETCH_INTERFACE_MENU_LIST,
+    payload: result
+  };
+}
+
+export async function fetchInterfaceMenuTree(projectId) {
+  let result = await axios.get('/api/interface/list_menu_tree?project_id=' + projectId);
+  return {
+    type: FETCH_INTERFACE_MENU_TREE,
     payload: result
   };
 }

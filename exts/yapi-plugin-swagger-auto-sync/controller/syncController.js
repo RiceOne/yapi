@@ -36,7 +36,7 @@ class syncController extends baseController {
 
     //操作定时任务
     if (requestBody.is_sync_open) {
-      this.interfaceSyncUtils.addSyncJob(projectId, requestBody.sync_cron, requestBody.sync_json_url, requestBody.sync_mode, requestBody.uid);
+      this.interfaceSyncUtils.addSyncJob(projectId, requestBody.sync_cat_id, requestBody.sync_cron, requestBody.sync_json_url, requestBody.sync_mode, requestBody.uid);
     } else {
       this.interfaceSyncUtils.deleteSyncJob(projectId);
     }
@@ -53,6 +53,21 @@ class syncController extends baseController {
       return (ctx.body = yapi.commons.resReturn(null, 408, '缺少项目Id'));
     }
     let result = await this.syncModel.getByProjectId(projectId);
+    console.log('定时任务：', result)
+    return (ctx.body = yapi.commons.resReturn(result));
+  }
+
+  /**
+   * 删除定时任务
+   * @param {*} ctx
+   */
+  async delSync(ctx) {
+    let id = ctx.query.id;
+    if (!id) {
+      return (ctx.body = yapi.commons.resReturn(null, 408, '要删除的同步方案已不存在'));
+    }
+    let result = await this.syncModel.del(id);
+    console.log('删除定时任务：', result)
     return (ctx.body = yapi.commons.resReturn(result));
   }
 

@@ -8,7 +8,7 @@ import axios from 'axios';
 import { setCurrGroup, fetchGroupMsg } from '../../../reducer/modules/group';
 import { changeMenuItem } from '../../../reducer/modules/menu';
 
-import { fetchInterfaceListMenu } from '../../../reducer/modules/interface';
+import { fetchInterfaceMenuTree } from '../../../reducer/modules/interface';
 const Option = AutoComplete.Option;
 
 @connect(
@@ -20,7 +20,7 @@ const Option = AutoComplete.Option;
     setCurrGroup,
     changeMenuItem,
     fetchGroupMsg,
-    fetchInterfaceListMenu
+    fetchInterfaceMenuTree
   }
 )
 @withRouter
@@ -40,7 +40,7 @@ export default class Srch extends Component {
     location: PropTypes.object,
     setCurrGroup: PropTypes.func,
     changeMenuItem: PropTypes.func,
-    fetchInterfaceListMenu: PropTypes.func,
+    fetchInterfaceMenuTree: PropTypes.func,
     fetchGroupMsg: PropTypes.func
   };
 
@@ -53,7 +53,7 @@ export default class Srch extends Component {
       await this.props.fetchGroupMsg(option.props['groupId']);
       this.props.history.push('/project/' + option.props['id']);
     } else if (option.props.type === '接口') {
-      await this.props.fetchInterfaceListMenu(option.props['projectId']);
+      await this.props.fetchInterfaceMenuTree(option.props['projectId']);
       this.props.history.push(
         '/project/' + option.props['projectId'] + '/interface/api/' + option.props['id']
       );

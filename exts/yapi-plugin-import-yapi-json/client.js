@@ -7,14 +7,10 @@ function importData(importDataModule) {
       res = JSON.parse(res);
       res.forEach(item => {
         interfaceData.cats.push({
-          name: item.name,
-          desc: item.desc
+          ...item
         });
-        item.list.forEach(api => {
-          api.catname = item.name;
-        });
-        interfaceData.apis = interfaceData.apis.concat(item.list);
       });
+      interfaceData.apis = [].concat(getAllInterface(res));
       return interfaceData;
     } catch (e) {
       console.error(e);
@@ -28,10 +24,26 @@ function importData(importDataModule) {
   }
 
   importDataModule.json = {
-    name: 'json',
+    name: 'Json',
     run: run,
-    desc: 'YApi接口 json数据导入'
+    desc: 'YApi接口 Json数据导入'
   };
+}
+
+function getAllInterface(treeData){
+  let apis = []
+  treeData.forEach(item => {
+    if(item.list){
+      apis = apis.concat(item.list)
+      item.list.forEach(api => {
+        api.catname = item.name;
+      });
+    }
+    if(item.children){
+      apis = apis.concat(getAllInterface(item.children))
+    }
+  })
+  return apis
 }
 
 module.exports = function() {

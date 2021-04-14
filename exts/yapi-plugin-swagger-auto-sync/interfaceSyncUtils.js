@@ -27,7 +27,7 @@ class syncUtils {
         for (let i = 0, len = allSyncJob.length; i < len; i++) {
             let syncItem = allSyncJob[i];
             if (syncItem.is_sync_open) {
-                this.addSyncJob(syncItem.project_id, syncItem.sync_cron, syncItem.sync_json_url, syncItem.sync_mode, syncItem.uid);
+                this.addSyncJob(syncItem.project_id, syncItem.sync_cat_id, syncItem.sync_cron, syncItem.sync_json_url, syncItem.sync_mode, syncItem.uid);
             }
         }
     }
@@ -40,13 +40,14 @@ class syncUtils {
      * @param {*} syncMode 同步模式
      * @param {*} uid 用户id
      */
-    async addSyncJob(projectId, cronExpression, swaggerUrl, syncMode, uid) {
+    async addSyncJob(projectId, catId, cronExpression, swaggerUrl, syncMode, uid) {
+
         if(!swaggerUrl)return;
         let projectToken = await this.getProjectToken(projectId, uid);
         //立即执行一次
-        this.syncInterface(projectId, swaggerUrl, syncMode, uid, projectToken);
+        this.syncInterface(projectId, catId, swaggerUrl, syncMode, uid, projectToken);
         let scheduleItem = schedule.scheduleJob(cronExpression, async () => {
-            this.syncInterface(projectId, swaggerUrl, syncMode, uid, projectToken);
+            this.syncInterface(projectId, catId, swaggerUrl, syncMode, uid, projectToken);
         });
 
         //判断是否已经存在这个任务
@@ -58,7 +59,9 @@ class syncUtils {
     }
 
     //同步接口
-    async syncInterface(projectId, swaggerUrl, syncMode, uid, projectToken) {
+    async syncInterface(projectId, catId, swaggerUrl, syncMode, uid, projectToken) {
+
+        yapi.commons.log('catId;;;' + catId);
         yapi.commons.log('定时器触发, syncJsonUrl:' + swaggerUrl + ",合并模式:" + syncMode);
         let oldPorjectData;
         try {
@@ -96,9 +99,9 @@ class syncUtils {
         //更新之前判断本次swagger json数据是否跟上次的相同,相同则不更新
         if (newSwaggerJsonData && oldSyncJob.old_swagger_content && oldSyncJob.old_swagger_content == md5(newSwaggerJsonData)) {
             //记录日志
-            // this.saveSyncLog(0, syncMode, "接口无更新", uid, projectId);
+            this.saveSyncLog(0, syncMode, "接口无更新", uid, projectId);
             oldSyncJob.last_sync_time = yapi.commons.time();
-            await this.syncModel.upById(oldSyncJob._id, oldSyncJob);
+            await this.syncModel.upById(projectId, oldSyncJob);
             return;
         }
 
@@ -106,12 +109,14 @@ class syncUtils {
             type: 'swagger',
             json: newSwaggerJsonData,
             project_id: projectId,
+            cat_id: catId,
             merge: syncMode,
             token: projectToken
         }
         let requestObj = {
             params: _params
         };
+
         await this.openController.importData(requestObj);
 
         //同步成功就更新同步表的数据

@@ -83,6 +83,8 @@ class ProjectList extends Component {
             form.resetFields();
             message.success('创建成功! ');
             this.props.history.push('/project/' + res.payload.data.data._id + '/interface/api');
+          } else {
+            message.error('创建失败: ' + res.payload.data.errmsg);
           }
         });
       }

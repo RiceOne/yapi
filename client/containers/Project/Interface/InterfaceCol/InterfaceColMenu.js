@@ -57,7 +57,7 @@ const ColModalForm = Form.create()(props => {
     fetchInterfaceColList,
     fetchInterfaceCaseList,
     fetchCaseData,
-    // fetchInterfaceListMenu,
+    // fetchInterfaceMenuTree,
     fetchCaseList,
     setColData,
     fetchProjectList
@@ -70,7 +70,7 @@ export default class InterfaceColMenu extends Component {
     interfaceColList: PropTypes.array,
     fetchInterfaceColList: PropTypes.func,
     fetchInterfaceCaseList: PropTypes.func,
-    // fetchInterfaceListMenu: PropTypes.func,
+    // fetchInterfaceMenuTree: PropTypes.func,
     fetchCaseList: PropTypes.func,
     fetchCaseData: PropTypes.func,
     setColData: PropTypes.func,
@@ -310,7 +310,7 @@ export default class InterfaceColMenu extends Component {
     // console.log('project', this.props.curProject)
     const groupId = this.props.curProject.group_id;
     await this.props.fetchProjectList(groupId);
-    // await this.props.fetchInterfaceListMenu(projectId)
+    // await this.props.fetchInterfaceMenuTree(projectId)
     this.setState({ importInterVisible: true, importColId: colId });
   };
 
@@ -572,16 +572,6 @@ export default class InterfaceColMenu extends Component {
                           }}
                         />
                       </Tooltip>
-                      <Tooltip title="导入接口">
-                        <Icon
-                          type="plus"
-                          className="interface-delete-icon"
-                          onClick={e => {
-                            e.stopPropagation();
-                            this.showImportInterfaceModal(col._id);
-                          }}
-                        />
-                      </Tooltip>
                       <Tooltip title="克隆集合">
                         <Icon
                           type="copy"
@@ -590,6 +580,16 @@ export default class InterfaceColMenu extends Component {
                             e.stopPropagation();
                             this.copyInterface(col);
                           }}
+                        />
+                      </Tooltip>
+                      <Tooltip title="导入接口">
+                        <Icon
+                            type="plus"
+                            className="interface-delete-icon"
+                            onClick={e => {
+                              e.stopPropagation();
+                              this.showImportInterfaceModal(col._id);
+                            }}
                         />
                       </Tooltip>
                     </div>

@@ -13,6 +13,8 @@ class syncModel extends baseModel {
       project_id: { type: Number, required: true },
       //是否开启自动同步
       is_sync_open: { type: Boolean, default: false },
+      // 同步到的目录层级
+      sync_cat_id:  { type: Number, required: true},
       //自动同步定时任务的cron表达式
       sync_cron: String,
       //自动同步获取json的url
@@ -25,13 +27,15 @@ class syncModel extends baseModel {
       old_swagger_content: String,
       add_time: Number,
       up_time: Number,
+      // 描述
+      desc: String,
     };
   }
 
   getByProjectId(id) {
-    return this.model.findOne({
+    return this.model.find({
       project_id: id
-    }) 
+    }).sort({_id:-1})
   }
 
   delByProjectId(project_id){

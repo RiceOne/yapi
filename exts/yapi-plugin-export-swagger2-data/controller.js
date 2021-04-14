@@ -27,7 +27,7 @@ class exportSwaggerController extends baseController {
             list = list.sort((a, b) => {
                 return a.index - b.index;
             });
-            if (list.length > 0) {
+            if (true) {
                 item.list = list;
                 newResult.push(item);
             }
@@ -67,9 +67,13 @@ class exportSwaggerController extends baseController {
     }
 
     async exportData(ctx) {
+
         let pid = ctx.request.query.pid;
         let type = ctx.request.query.type;
         let status = ctx.request.query.status;
+        let catid =  ctx.request.query.catid;
+
+        console.log('ctx-param', ctx.request.query)
 
         if (!pid) {
             ctx.body = yapi.commons.resReturn(null, 200, 'pid 不为空');
@@ -77,15 +81,41 @@ class exportSwaggerController extends baseController {
         let curProject;
         let tp = '';
         try {
+
             curProject = await this.projectModel.get(pid);
             ctx.set('Content-Type', 'application/octet-stream');
-            const list = await this.handleListClass(pid, status);
+
+            // *** 导出结果适配树 ***
+            let list = [], tree = [], _list = tree, selected = {}, children = [];
+            // 查询项目下所有目录及他们下的接口
+            list = await this.handleListClass(pid, status);
+            // 构造树: 给每个list加上children属性
+            if(list) tree = yapi.commons.buildTree(list);
+            // 树解成list
+            if(tree) _list = yapi.commons.tree2list(tree);
+            // * 筛选出选中的目录Object: 重要
+            if(catid) {
+                selected = _list.filter(item => {
+                    return Number(catid) === Number(item._id)
+                })[0];
+                // 获取所有下级菜单id
+                children = yapi.commons.getChildren(selected);
+            }
+            // 筛选所有下级
+            if(catid && children) {
+                list = list.filter(item => {
+                    return children.indexOf(Number(item._id)) > -1 ;
+                })
+            }
+            // 去除没有接口的目录
+            list = list.filter(item => {
+                return item.list && item.list.length > 0;
+            })
 
             switch (type) {
                 case 'OpenAPIV2':
                     { //in this time, only implemented OpenAPI V2.0
-                        let data = this.handleExistId(list);
-                        let model = await convertToSwaggerV2Model(data);
+                        let model = await convertToSwaggerV2Model(list);
                         tp = JSON.stringify(model, null, 2);
                         ctx.set('Content-Disposition', `attachment; filename=swaggerApi.json`);
                         return (ctx.body = tp);

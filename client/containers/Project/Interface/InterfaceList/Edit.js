@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import InterfaceEditForm from './InterfaceEditForm.js';
 import {
   updateInterfaceData,
-  fetchInterfaceListMenu,
+  fetchInterfaceMenuTree,
   fetchInterfaceData
 } from '../../../../reducer/modules/interface.js';
 import { getProject } from '../../../../reducer/modules/project.js';
@@ -23,7 +23,7 @@ import ProjectTag from '../../Setting/ProjectMessage/ProjectTag.js';
   },
   {
     updateInterfaceData,
-    fetchInterfaceListMenu,
+    fetchInterfaceMenuTree,
     fetchInterfaceData,
     getProject
   }
@@ -33,7 +33,7 @@ class InterfaceEdit extends Component {
     curdata: PropTypes.object,
     currProject: PropTypes.object,
     updateInterfaceData: PropTypes.func,
-    fetchInterfaceListMenu: PropTypes.func,
+    fetchInterfaceMenuTree: PropTypes.func,
     fetchInterfaceData: PropTypes.func,
     match: PropTypes.object,
     switchToView: PropTypes.func,
@@ -60,7 +60,7 @@ class InterfaceEdit extends Component {
   onSubmit = async params => {
     params.id = this.props.match.params.actionId;
     let result = await axios.post('/api/interface/up', params);
-    this.props.fetchInterfaceListMenu(this.props.currProject._id).then();
+    this.props.fetchInterfaceMenuTree(this.props.currProject._id).then();
     this.props.fetchInterfaceData(params.id).then();
     if (result.data.errcode === 0) {
       this.props.updateInterfaceData(params);

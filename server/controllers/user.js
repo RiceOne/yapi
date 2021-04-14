@@ -307,7 +307,8 @@ class userController extends baseController {
     params = yapi.commons.handleParams(params, {
       username: 'string',
       password: 'string',
-      email: 'string'
+      email: 'string',
+      role: 'string'
     });
 
     if (!params.email) {
@@ -330,10 +331,10 @@ class userController extends baseController {
       password: yapi.commons.generatePassword(params.password, passsalt), //加密
       email: params.email,
       passsalt: passsalt,
-      role: 'member',
+      role: params.role ? params.role : 'member',
       add_time: yapi.commons.time(),
       up_time: yapi.commons.time(),
-      type: 'site'
+      type: 'site',
     };
 
     if (!data.username) {
@@ -342,8 +343,9 @@ class userController extends baseController {
 
     try {
       let user = await userInst.save(data);
-
-      this.setLoginCookie(user._id, user.passsalt);
+      if(params.noLogin) {
+        this.setLoginCookie(user._id, user.passsalt);
+      }
       await this.handlePrivateGroup(user._id, user.username, user.email);
       ctx.body = yapi.commons.resReturn({
         uid: user._id,
@@ -410,10 +412,6 @@ class userController extends baseController {
     try {
       let userInst = yapi.getInst(userModel);
       let id = ctx.request.query.id;
-
-      if (this.getRole() !== 'admin' && id != this.getUid()) {
-        return (ctx.body = yapi.commons.resReturn(null, 401, '没有权限'));
-      }
 
       if (!id) {
         return (ctx.body = yapi.commons.resReturn(null, 400, 'uid不能为空'));
@@ -626,17 +624,22 @@ class userController extends baseController {
    * @example ./api/user/search.json
    */
   async search(ctx) {
+
+    let queryList = [];
+
     const { q } = ctx.request.query;
 
     if (!q) {
-      return (ctx.body = yapi.commons.resReturn(void 0, 400, 'No keyword.'));
+      queryList = await this.Model.list();
+      //return (ctx.body = yapi.commons.resReturn(void 0, 400, 'No keyword.'));
     }
 
     if (!yapi.commons.validateSearchKeyword(q)) {
       return (ctx.body = yapi.commons.resReturn(void 0, 400, 'Bad query.'));
     }
 
-    let queryList = await this.Model.search(q);
+    queryList = await this.Model.search(q);
+
     let rules = [
       {
         key: '_id',

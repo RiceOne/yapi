@@ -478,5 +478,5 @@ class CaseDesForm extends Component {
   }
 }
 
-const CaseDesModal = Form.create()(CaseDesForm);
+const CaseDesModal = CaseDesForm;
 export default CaseDesModal;

@@ -76,6 +76,7 @@ class openController extends baseController {
     let type = ctx.params.type;
     let content = ctx.params.json;
     let project_id = ctx.params.project_id;
+    let cat_id = ctx.params.cat_id;
     let dataSync = ctx.params.merge;
 
     let warnMessage = ''
@@ -122,7 +123,7 @@ class openController extends baseController {
     }
 
     let menuList = await this.interfaceCatModel.list(project_id);
-    let selectCatid = menuList[0]._id;
+    let selectCatid = cat_id; // TODOTODOTODO
     let projectData = await this.projectModel.get(project_id);
     let res = await importDataModule[type](content);
 
@@ -177,7 +178,6 @@ class openController extends baseController {
     if (!this.$tokenAuth) {
       return (ctx.body = yapi.commons.resReturn(null, 40022, 'token 验证失败'));
     }
-    // console.log(1231312)
     const token = ctx.query.token;
 
     const projectId = ctx.params.project_id;
@@ -215,7 +215,7 @@ class openController extends baseController {
       item.after_script = projectData.after_script;
       item.env = projectEvn.env;
       let result;
-      // console.log('item',item.case_env)
+
       try {
         result = await this.handleTest(item);
       } catch (err) {

@@ -10,6 +10,7 @@ import { withRouter } from 'react-router';
 import Srch from './Search/Search';
 const { Header } = Layout;
 import LogoSVG from '../LogoSVG/index.js';
+import logo from '../../images/logo.svg';
 import Breadcrumb from '../Breadcrumb/Breadcrumb.js';
 import GuideBtns from '../GuideBtns/GuideBtns.js';
 const plugin = require('client/plugin.js');
@@ -300,7 +301,8 @@ export default class HeaderCom extends Component {
           <Link onClick={this.relieveLink} to="/group" className="logo">
             <div className="href">
               <span className="img">
-                <LogoSVG length="32px" />
+                {/*<LogoSVG length="32px" />*/}
+                <img src={logo} />
               </span>
             </div>
           </Link>

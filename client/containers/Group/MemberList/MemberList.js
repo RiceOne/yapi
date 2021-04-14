@@ -186,10 +186,11 @@ class MemberList extends Component {
   }
 
   render() {
+    const groupName = this.props.currGroup.group_name;
     const columns = [
       {
         title:
-          this.props.currGroup.group_name + ' 分组成员 (' + this.state.userInfo.length + ') 人',
+          groupName + ' 分组成员 (' + this.state.userInfo.length + ') 人',
         dataIndex: 'username',
         key: 'username',
         render: (text, record) => {
@@ -229,12 +230,12 @@ class MemberList extends Component {
               <div>
                 <Select
                   value={record.role + '-' + record.uid}
-                  className="select"
+                  className="select select-custom"
                   onChange={this.changeUserRole}
                 >
-                  <Option value={'owner-' + record.uid}>组长</Option>
-                  <Option value={'dev-' + record.uid}>开发者</Option>
-                  <Option value={'guest-' + record.uid}>访客</Option>
+                  <Option value={'owner-' + record.uid}>{groupName}：管理员</Option>
+                  <Option value={'dev-' + record.uid}>{groupName}：开发者</Option>
+                  <Option value={'guest-' + record.uid}>{groupName}：访客</Option>
                 </Select>
                 <Popconfirm
                   placement="topRight"
@@ -251,11 +252,11 @@ class MemberList extends Component {
           } else {
             // 非管理员可以看到权限 但无法修改
             if (record.role === 'owner') {
-              return '组长';
+              return groupName + '管理员';
             } else if (record.role === 'dev') {
-              return '开发者';
+              return groupName + '开发者';
             } else if (record.role === 'guest') {
-              return '访客';
+              return groupName + '访客';
             } else {
               return '';
             }
@@ -301,10 +302,10 @@ class MemberList extends Component {
                 <div className="label usernameauth">权限: </div>
               </Col>
               <Col span="15">
-                <Select defaultValue="dev" className="select" onChange={this.changeNewMemberRole}>
-                  <Option value="owner">组长</Option>
-                  <Option value="dev">开发者</Option>
-                  <Option value="guest">访客</Option>
+                <Select defaultValue="dev" className="ant-select-selection" onChange={this.changeNewMemberRole}>
+                  <Option value="owner">{groupName}：管理员</Option>
+                  <Option value="dev">{groupName}：开发者</Option>
+                  <Option value="guest">{groupName}：访客</Option>
                 </Select>
               </Col>
             </Row>

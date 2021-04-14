@@ -34,7 +34,7 @@ class Content extends Component {
   };
   constructor(props) {
     super(props);
-    this.title = 'YApi-高效、易用、功能强大的可视化接口管理平台';
+    this.title = '中电金信接口管理平台';
     this.state = {
       curtab: 'view',
       visible: false,
@@ -106,10 +106,10 @@ class Content extends Component {
     });
   };
   render() {
-    if (this.props.curdata.title) {
+   /* if (this.props.curdata.title) {
       document.getElementsByTagName('title')[0].innerText =
         this.props.curdata.title + '-' + this.title;
-    }
+    }*/
 
     let InterfaceTabs = {
       view: {

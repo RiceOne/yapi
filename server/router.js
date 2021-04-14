@@ -339,8 +339,13 @@ let routerConfig = {
       method: 'get'
     },
     {
-      action: 'listByMenu',
+      action: 'listMenu',
       path: 'list_menu',
+      method: 'get'
+    },
+    {
+      action: 'listMenuTree',
+      path: 'list_menu_tree',
       method: 'get'
     },
     {
@@ -362,6 +367,11 @@ let routerConfig = {
       action: 'delCat',
       path: 'del_cat',
       method: 'post'
+    },
+    {
+      action: 'rebuildCat',
+      path: 'rebuild_cat',
+      method: 'get'
     },
     {
       action: 'getCustomField',

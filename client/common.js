@@ -219,6 +219,12 @@ exports.safeAssign = (Obj, nextObj) => {
 
 // 交换数组的位置
 exports.arrayChangeIndex = (arr, start, end) => {
+
+  let newArr = [].concat(arr);
+  [newArr[start], newArr[end]] = [newArr[end], newArr[start]];
+  return newArr;
+
+  /*
   let newArr = [].concat(arr);
   // newArr[start] = arr[end];
   // newArr[end] = arr[start];
@@ -227,6 +233,7 @@ exports.arrayChangeIndex = (arr, start, end) => {
   // end自动加1
   newArr.splice(end, 0, startItem);
   let changes = [];
+  console.log('*newArr*', newArr)
   newArr.forEach((item, index) => {
     changes.push({
       id: item._id,
@@ -234,5 +241,26 @@ exports.arrayChangeIndex = (arr, start, end) => {
     });
   });
 
-  return changes;
+  return changes;*/
 };
+
+// list构造tree树结构
+exports.buildTree = (list, id, parentId) => {
+  let cacheObj = {}
+  list.forEach(item => {
+    item.children = []
+    cacheObj[item[id]] = item
+  })
+  return list.filter(item => {
+    if (item[parentId] !== parentId) {
+      if(cacheObj[item[parentId]]) {
+        cacheObj[item[parentId]].children.push(item)
+        return false
+      } else { // 没父级，可能是顶层节点
+        // console.log('tree node has no parent: ', item, parentId);
+      }
+    }
+    return true
+  })
+  return cacheObj;
+}

@@ -22,9 +22,12 @@ async function handle(
     messageSuccess(`正在导入，已执行任务 ${index+1} 个，共 ${len} 个`)
   }, 3000)
 
-  const handleAddCat = async cats => {
+  const handleAddCat = async (cats, parent_id) => {
+
     let catsObj = {};
+
     if (cats && Array.isArray(cats)) {
+
       for (let i = 0; i < cats.length; i++) {
         let cat = cats[i];
         let findCat = _.find(menuList, menu => menu.name === cat.name);
@@ -38,19 +41,23 @@ async function handle(
           }
 
           let data = {
+            parent_id: parent_id ? parent_id : selectCatid,
             name: cat.name,
             project_id: projectId,
             desc: cat.desc,
             token
           };
           let result = await axios.post(apipath, data);
-
           if (result.data.errcode) {
             messageError(result.data.errmsg);
             callback({ showLoading: false });
             return false;
           }
-          cat.id = result.data.data._id;
+          cat._id = result.data.data._id;
+          if(cat.children){
+            let _catsObj = await handleAddCat(cat.children, cat._id)
+            catsObj = Object.assign({}, catsObj, _catsObj)
+          }
         }
       }
     }
@@ -58,7 +65,9 @@ async function handle(
   };
 
   const handleAddInterface = async info => {
+
     const cats = await handleAddCat(info.cats);
+
     if (cats === false) {
       return;
     }
@@ -97,13 +106,14 @@ async function handle(
         data.path =
           data.path.indexOf(basePath) === 0 ? data.path.substr(basePath.length) : data.path;
       }
+
       if (
         data.catname &&
         cats[data.catname] &&
         typeof cats[data.catname] === 'object' &&
-        cats[data.catname].id
+        cats[data.catname]._id
       ) {
-        data.catid = cats[data.catname].id;
+        data.catid = cats[data.catname]._id;
       }
       data.token = token;
 

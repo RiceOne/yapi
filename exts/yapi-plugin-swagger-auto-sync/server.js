@@ -18,6 +18,12 @@ module.exports = function () {
       path: 'autoSync/save',
       action: 'upSync'
     });
+    addRouter({
+      controller: controller,
+      method: 'get',
+      path: 'autoSync/del',
+      action: 'delSync'
+    });
   });
 
 };

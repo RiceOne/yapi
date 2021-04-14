@@ -1,23 +1,27 @@
 import React, { PureComponent as Component } from 'react';
 import { formatTime } from '../../common.js';
 import { Link } from 'react-router-dom';
-import { setBreadcrumb } from '../../reducer/modules/user';
+import {regActions, setBreadcrumb} from '../../reducer/modules/user';
 //import PropTypes from 'prop-types'
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Table, Popconfirm, message, Input } from 'antd';
+import {Table, Popconfirm, message, Input, Button, Modal} from 'antd';
 import axios from 'axios';
+import AddUserForm from "./AddUserForm";
+
 
 const Search = Input.Search;
 const limit = 20;
 @connect(
   state => {
     return {
-      curUserRole: state.user.role
+      curUserRole: state.user.role,
+      loginData: state.user
     };
   },
   {
-    setBreadcrumb
+    setBreadcrumb,
+    regActions
   }
 )
 class List extends Component {
@@ -28,12 +32,14 @@ class List extends Component {
       total: null,
       current: 1,
       backups: [],
-      isSearch: false
+      isSearch: false,
+      add_user_modal_visible: false,
     };
   }
   static propTypes = {
     setBreadcrumb: PropTypes.func,
-    curUserRole: PropTypes.string
+    curUserRole: PropTypes.string,
+    regActions: PropTypes.func,
   };
   changePage = current => {
     this.setState(
@@ -127,6 +133,25 @@ class List extends Component {
     }
   };
 
+  handleAddUser = (data, cb) => {
+    if(data) {
+      data.noLogin = true;
+      this.props.regActions(data).then(res => {
+        if (res.payload.data.errcode !== 0) {
+          return message.error(res.payload.data.errmsg);
+        }
+        message.success('添加用户成功! ');
+        this.setState({
+          add_user_modal_visible: false
+        });
+        this.getUserList();
+        if (cb) {
+          cb();
+        }
+      });
+    }
+  };
+
   render() {
     const role = this.props.curUserRole;
     let data = [];
@@ -206,16 +231,25 @@ class List extends Component {
       current: 1
     };
 
+
     return (
       <section className="user-table">
         <div className="user-search-wrapper">
           <h2 style={{ marginBottom: '10px' }}>用户总数：{this.state.total}位</h2>
+          <Button className="btn-filter" type="primary"
+                  onClick={e => {
+                    e.stopPropagation();
+                    this.setState({add_user_modal_visible: true }) }
+                  }>
+            添加用户
+          </Button>
           <Search
             onChange={e => this.handleSearch(e.target.value)}
             onSearch={this.handleSearch}
             placeholder="请输入用户名"
           />
         </div>
+
         <Table
           bordered={true}
           rowKey={record => record._id}
@@ -223,6 +257,27 @@ class List extends Component {
           pagination={this.state.isSearch ? defaultPageConfig : pageConfig}
           dataSource={data}
         />
+        {this.state.add_user_modal_visible ? (
+            <Modal
+                title={'添加用户'}
+                visible={this.state.add_user_modal_visible}
+                onCancel={() => {
+                  this.setState({add_user_modal_visible: false})
+                }}
+                footer={null}
+                className="addcatmodal"
+            >
+              <AddUserForm
+                  onSubmit={this.handleAddUser}
+                  onCancel={() => {
+                    this.setState({add_user_modal_visible: false})
+                  }}
+              />
+            </Modal>
+        ) : (
+            ''
+        )}
+
       </section>
     );
   }

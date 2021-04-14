@@ -55,6 +55,7 @@ class ProjectEnv extends Component {
     this._isMounted = true;
     await this.props.getProject(this.props.projectId);
     const { env, _id } = this.props.projectMsg;
+    console.log('env',env)
     this.initState(env, _id);
     this.handleClick(0, env[0]);
   }
@@ -64,6 +65,7 @@ class ProjectEnv extends Component {
   }
 
   handleClick = (key, data) => {
+
     this.setState({
       currentEnvMsg: data,
       currentKey: key

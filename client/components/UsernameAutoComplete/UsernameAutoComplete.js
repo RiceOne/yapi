@@ -52,6 +52,10 @@ class UsernameAutoComplete extends Component {
     callbackState: PropTypes.func
   };
 
+  componentDidMount() {
+    this.handleSearch('');
+  }
+
   // 搜索回调
   handleSearch = value => {
     const params = { q: value };

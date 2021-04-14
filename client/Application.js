@@ -36,7 +36,7 @@ const alertContent = () => {
 let AppRoute = {
   home: {
     path: '/',
-    component: Home
+    component: Login
   },
   group: {
     path: '/group',
@@ -142,7 +142,7 @@ export default class App extends Component {
                 {/* <Route path="/statistic" component={statisticsPage} /> */}
               {/* </div> */}
             </div>
-            <Footer />
+            {/* <Footer /> 去除底部 */}
           </div>
         </Router>
       );

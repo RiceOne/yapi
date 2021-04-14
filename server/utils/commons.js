@@ -677,3 +677,50 @@ exports.createWebAPIRequest = function (ops) {
   });
 }
 
+// 构造树
+exports.buildTree = (data) => {
+  data.forEach(element => {
+    let parentId = element.parent_id;
+    if (parentId !== 0) {
+      data.forEach(ele => {
+        //当内层循环的ID== 外层循环的parendId时，（说明有children），需要往该内层id里建个children并push对应的数组；
+        if (ele._id === parentId) {
+          if (!ele.children) {
+            ele.children = [];
+          }
+          ele.children.push(element);
+        }
+      });
+    }
+  });
+  //这一步是过滤，按树展开，将多余的数组剔除；
+  data = data.filter(ele => ele.parent_id === 0 || ele.parent_id === undefined);
+  return data;
+}
+
+
+// 递归遍历树，形成平铺list结构
+exports.tree2list = (treeData) => {
+  let listData = []
+  if(treeData){
+    treeData.forEach(item=>{
+      listData.push(item);
+      listData = listData.concat(this.tree2list(item.children));
+    })
+  }
+  return listData;
+}
+
+// 递归遍历树，找到某一菜单的所有下级菜单（包括其自身）
+exports.getChildren = (treeNode) => {
+  let allChildren = [];
+  allChildren.push(treeNode._id)
+  if(treeNode.children) {
+    treeNode.children.forEach(child=>{
+      allChildren = allChildren.concat(this.getChildren(child))
+    })
+  }
+  return allChildren;
+}
+
+

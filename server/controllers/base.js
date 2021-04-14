@@ -47,12 +47,12 @@ class baseController {
 			'/api/interface/list',
 			'/api/interface/list_menu',
 			'/api/interface/add_cat',
+      '/api/interface/rebuild_cat',
       '/api/interface/getCatMenu',
       '/api/interface/list_cat',
       '/api/project/get',
       '/api/plugin/export',
-      '/api/project/up',
-      '/api/plugin/exportSwagger'
+      '/api/project/up'
     ];
 
     let params = Object.assign({}, ctx.query, ctx.request.body);

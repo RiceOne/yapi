@@ -1,6 +1,6 @@
 function exportData(exportDataModule, pid) {
     exportDataModule.swaggerjson = {
-      name: 'swaggerjson',
+      name: 'Swagger',
       route: `/api/plugin/exportSwagger?type=OpenAPIV2&pid=${pid}`,
       desc: '导出项目接口文档为(Swagger 2.0)Json文件'
     };

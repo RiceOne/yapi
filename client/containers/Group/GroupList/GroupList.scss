@@ -113,6 +113,11 @@
       // padding: 0 24px;
       font-size: 14px;
     }
+    &.ant-menu-inline{
+      .ant-menu-item{
+        width: 100%;
+      }
+    }
     .group-item:hover {
       // background: #34495E;
       // color: $color-white;
