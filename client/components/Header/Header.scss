@@ -33,7 +33,6 @@
     .href {
       text-decoration: none;
       display: block;
-      line-height: 51px;
     }
     .logo-name {
       color: $color-white;
@@ -42,16 +41,11 @@
       margin-left: .38rem;
     }
     .img {
-      //position: absolute;
-      //left: 0;
-      //top: 50%;
-      //left: 50%;
-      //transform: translate(-16px,-17px);
-      margin-left: 12px;
-      img{
-        width: 30px;
-        height: 30px;
-      }
+      position: absolute;
+      left: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-16px,-17px);
     }
     .ui-badge {
       position: absolute;
@@ -129,7 +123,7 @@
           overflow: hidden;
           width: 32px;
           height: 32px;
-          line-height: 0;
+          line-height: 32px;
           border-radius: 16px;
         }
 
