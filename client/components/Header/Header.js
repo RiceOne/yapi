@@ -10,7 +10,6 @@ import { withRouter } from 'react-router';
 import Srch from './Search/Search';
 const { Header } = Layout;
 import LogoSVG from '../LogoSVG/index.js';
-import logo from '../../images/logo.svg';
 import Breadcrumb from '../Breadcrumb/Breadcrumb.js';
 import GuideBtns from '../GuideBtns/GuideBtns.js';
 const plugin = require('client/plugin.js');
@@ -87,7 +86,7 @@ const tipDoc = (
     </h3>
     <p>
       初次使用 YApi，强烈建议你阅读{' '}
-      <a target="_blank" href="https://hellosean1025.github.io/yapi/" rel="noopener noreferrer">
+      <a target="_blank" href="https://yapi.ymfe.org" rel="noopener noreferrer">
         使用文档
       </a>
       ，我们为你提供了通俗易懂的快速入门教程，更有详细的使用说明，欢迎阅读！{' '}
@@ -153,7 +152,7 @@ const ToolUser = props => {
       >
         <Tooltip placement="bottom" title={'使用文档'}>
           <li className="toolbar-li">
-            <a target="_blank" href="https://hellosean1025.github.io/yapi" rel="noopener noreferrer">
+            <a target="_blank" href="https://yapi.ymfe.org" rel="noopener noreferrer">
               <Icon className="dropdown-link" style={{ fontSize: 16 }} type="question-circle" />
             </a>
           </li>
@@ -301,8 +300,7 @@ export default class HeaderCom extends Component {
           <Link onClick={this.relieveLink} to="/group" className="logo">
             <div className="href">
               <span className="img">
-                {/*<LogoSVG length="32px" />*/}
-                <img src={logo} />
+                <LogoSVG length="32px" />
               </span>
             </div>
           </Link>
