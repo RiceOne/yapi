@@ -714,11 +714,13 @@ exports.tree2list = (treeData) => {
 // 递归遍历树，找到某一菜单的所有下级菜单（包括其自身）
 exports.getChildren = (treeNode) => {
   let allChildren = [];
-  allChildren.push(treeNode._id)
-  if(treeNode.children) {
-    treeNode.children.forEach(child=>{
-      allChildren = allChildren.concat(this.getChildren(child))
-    })
+  if(treeNode) {
+    allChildren.push(treeNode._id)
+    if (treeNode.children) {
+      treeNode.children.forEach(child => {
+        allChildren = allChildren.concat(this.getChildren(child))
+      })
+    }
   }
   return allChildren;
 }

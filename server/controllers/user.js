@@ -343,7 +343,7 @@ class userController extends baseController {
 
     try {
       let user = await userInst.save(data);
-      if(params.noLogin) {
+      if(!params.noLogin) {
         this.setLoginCookie(user._id, user.passsalt);
       }
       await this.handlePrivateGroup(user._id, user.username, user.email);
@@ -627,7 +627,7 @@ class userController extends baseController {
 
     let queryList = [];
 
-    const { q } = ctx.request.query;
+    const { q, page, limit } = ctx.request.query;
 
     if (!q) {
       queryList = await this.Model.list();
@@ -638,7 +638,7 @@ class userController extends baseController {
       return (ctx.body = yapi.commons.resReturn(void 0, 400, 'Bad query.'));
     }
 
-    queryList = await this.Model.search(q);
+    queryList = await this.Model.search(q, page, limit);
 
     let rules = [
       {

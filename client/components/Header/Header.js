@@ -301,8 +301,8 @@ export default class HeaderCom extends Component {
           <Link onClick={this.relieveLink} to="/group" className="logo">
             <div className="href">
               <span className="img">
-                <LogoSVG length="32px" />
-                {/*<img src={logo} />*/}
+                {/*<LogoSVG length="32px" />*/}
+                <img src={logo} />
               </span>
             </div>
           </Link>

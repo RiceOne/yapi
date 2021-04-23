@@ -1,6 +1,6 @@
-import React, { PureComponent as Component } from 'react';
+import React, {PureComponent as Component} from 'react';
 import PropTypes from 'prop-types';
-import { Select } from 'antd';
+import {Select} from 'antd';
 import axios from 'axios';
 
 const Option = Select.Option;
@@ -37,90 +37,134 @@ const Option = Select.Option;
  *
  */
 class UsernameAutoComplete extends Component {
-  constructor(props) {
-    super(props);
-    // this.lastFetchId = 0;
-    // this.fetchUser = debounce(this.fetchUser, 800);
-  }
+    constructor(props) {
+        super(props);
+        // this.lastFetchId = 0;
+        // this.fetchUser = debounce(this.fetchUser, 800);
+    }
 
-  state = {
-    dataSource: [],
-    fetching: false
-  };
+    state = {
+        dataSource: [],
+        fetching: false,
+        searchKey: '',
+        scrollPage: 1,
+        limit: 10,
+        pageEnd: false,
+    };
 
-  static propTypes = {
-    callbackState: PropTypes.func
-  };
+    static propTypes = {
+        callbackState: PropTypes.func
+    };
 
-  componentDidMount() {
-    this.handleSearch('');
-  }
+    componentDidMount() {
+        // 初始态加载用户
+        this.listUserWithPage();
+    }
 
-  // 搜索回调
-  handleSearch = value => {
-    const params = { q: value };
-    // this.lastFetchId += 1;
-    // const fetchId = this.lastFetchId;
-    this.setState({ fetching: true });
-    axios.get('/api/user/search', { params }).then(data => {
-      // if (fetchId !== this.lastFetchId) { // for fetch callback order
-      //   return;
-      // }
-      const userList = [];
-      data = data.data.data;
+    // 分页查询
+    async listUserWithPage() {
 
-      if (data) {
-        data.forEach(v =>
-          userList.push({
-            username: v.username,
-            id: v.uid
-          })
-        );
-        // 取回搜索值后，设置 dataSource
-        this.setState({
-          dataSource: userList
+        const {dataSource, searchKey, scrollPage, limit} = this.state;
+
+        const params = {q: searchKey};
+
+        // 分页懒加载
+        // const params = {q: searchKey, page: scrollPage, limit};
+
+        this.setState({fetching: true});
+        await axios.get('/api/user/search', {params}).then(data => {
+            // if (fetchId !== this.lastFetchId) { // for fetch callback order
+            //   return;
+            // }
+            const userList = [].concat(dataSource);
+            data = data.data.data;
+
+            if (data && data.length > 0) {
+                data.forEach(v =>
+                    userList.push({
+                        username: v.username,
+                        id: v.uid
+                    })
+                );
+                // 取回搜索值后，设置 dataSource
+                this.setState({
+                    dataSource: userList
+                });
+            } else {
+                this.setState({pageEnd: true})
+            }
         });
-      }
-    });
-  };
+    }
 
-  // 选中候选词时
-  handleChange = value => {
-    this.setState({
-      dataSource: [],
-      // value,
-      fetching: false
-    });
-    this.props.callbackState(value);
-  };
+    // 搜索回调
+    handleSearch = value => {
+        this.setState({
+                dataSource: [],
+                fetching: false,
+                searchKey: value,
+                scrollPage: 1,
+                limit: 10,
+                pageEnd: false,
+            },
+            () => {
+                this.listUserWithPage();
+            })
+    };
 
-  render() {
-    let { dataSource, fetching } = this.state;
+    // 选中候选词时
+    handleChange = value => {
+        this.setState({
+            // 初始化
+            // dataSource: [],
+            // value,
+            fetching: false
+        });
+        this.props.callbackState(value);
+    };
 
-    const children = dataSource.map((item, index) => (
-      <Option key={index} value={'' + item.id}>
-        {item.username}
-      </Option>
-    ));
+    //懒加载数据
+    lazyLoad = e => {
+        e.persist();
+        const {target} = e;
+        let {scrollPage, pageEnd} = this.state;
+        if (target.scrollTop + target.offsetHeight === target.scrollHeight) {
+            this.setState({scrollPage: scrollPage + 1}, () => {
+                if (!pageEnd) {
+                    this.listUserWithPage();
+                }
+            });
+        }
+    }
 
-    // if (!children.length) {
-    //   fetching = false;
-    // }
-    return (
-      <Select
-        mode="multiple"
-        style={{ width: '100%' }}
-        placeholder="请输入用户名"
-        filterOption={false}
-        optionLabelProp="children"
-        notFoundContent={fetching ? <span style={{ color: 'red' }}> 当前用户不存在</span> : null}
-        onSearch={this.handleSearch}
-        onChange={this.handleChange}
-      >
-        {children}
-      </Select>
-    );
-  }
+
+    render() {
+
+        let {dataSource, fetching} = this.state;
+        const children = dataSource.map((item, index) => (
+            <Option key={index} value={'' + item.id}>
+                {item.username}
+            </Option>
+        ));
+
+        // if (!children.length) {
+        //   fetching = false;
+        // }
+        return (
+            <Select
+                mode="multiple"
+                style={{width: '100%'}}
+                placeholder="请输入用户名"
+                filterOption={false}
+                optionLabelProp="children"
+                notFoundContent={fetching ? <span style={{color: 'red'}}> 当前用户不存在</span> : null}
+                onSearch={this.handleSearch}
+                onChange={this.handleChange}
+                /*onPopupScroll={this.lazyLoad} 懒加载*/
+            >
+                {children}
+            </Select>
+        );
+    }
 }
 
 export default UsernameAutoComplete;

@@ -322,6 +322,7 @@ class projectController extends baseController {
           let catDate = {
             name: item.name,
             project_id: result._id,
+            parent_id: item.parent_id,
             desc: item.desc,
             uid: this.getUid(),
             add_time: yapi.commons.time(),

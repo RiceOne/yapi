@@ -12,159 +12,168 @@ const md = require('../../common/markdown');
 
 // const htmlToPdf = require("html-pdf");
 class exportController extends baseController {
-  constructor(ctx) {
-    super(ctx);
-    this.catModel = yapi.getInst(interfaceCatModel);
-    this.interModel = yapi.getInst(interfaceModel);
-    this.projectModel = yapi.getInst(projectModel);
+    constructor(ctx) {
+        super(ctx);
+        this.catModel = yapi.getInst(interfaceCatModel);
+        this.interModel = yapi.getInst(interfaceModel);
+        this.projectModel = yapi.getInst(projectModel);
 
-  }
-
-  async handleListClass(pid, status) {
-    let result = await this.catModel.list(pid),
-        newResult = [];
-    for (let i = 0, item, list; i < result.length; i++) {
-      item = result[i].toObject();
-      list = await this.interModel.listByInterStatus(item._id, status);
-      list = list.sort((a, b) => {
-        return a.index - b.index;
-      });
-      if (true) {
-        item.list = list;
-        newResult.push(item);
-      }
-    }
-    return newResult;
-  }
-
-  handleExistId(data) {
-    function delArrId(arr, fn) {
-      if (!Array.isArray(arr)) return;
-      arr.forEach(item => {
-        delete item._id;
-        delete item.__v;
-        delete item.uid;
-        delete item.edit_uid;
-        delete item.catid;
-        delete item.project_id;
-
-        if (typeof fn === 'function') fn(item);
-      });
     }
 
-    delArrId(data, function(item) {
-      delArrId(item.list, function(api) {
-        delArrId(api.req_body_form);
-        delArrId(api.req_params);
-        delArrId(api.req_query);
-        delArrId(api.req_headers);
-        if (api.query_path && typeof api.query_path === 'object') {
-          delArrId(api.query_path.params);
+    async handleListClass(pid, status) {
+        let result = await this.catModel.list(pid),
+            newResult = [];
+        for (let i = 0, item, list; i < result.length; i++) {
+            item = result[i].toObject();
+            list = await this.interModel.listByInterStatus(item._id, status);
+            list = list.sort((a, b) => {
+                return a.index - b.index;
+            });
+            if (true) {
+                item.list = list;
+                newResult.push(item);
+            }
         }
-      });
-    });
-
-    return data;
-  }
-
-  async exportData(ctx) {
-    let pid = ctx.request.query.pid;
-    let type = ctx.request.query.type;
-    let status = ctx.request.query.status;
-    let isWiki = ctx.request.query.isWiki;
-    let catid =  ctx.request.query.catid;
-
-    if (!pid) {
-      ctx.body = yapi.commons.resReturn(null, 200, 'pid 不为空');
-    }
-    let curProject, wikiData;
-    let tp = '';
-    try {
-      curProject = await this.projectModel.get(pid);
-      if (isWiki === 'true') {
-        const wikiModel = require('../yapi-plugin-wiki/wikiModel.js');
-        wikiData = await yapi.getInst(wikiModel).get(pid);
-      }
-      ctx.set('Content-Type', 'application/octet-stream');
-
-      // *** 导出结果适配树 ***
-      let list = [], tree = [], _list = tree, selected = {}, children = [];
-      // 查询项目下所有目录及他们下的接口
-      list = await this.handleListClass(pid, status);
-      // 构造树: 给每个list加上children属性
-      if(list) tree = yapi.commons.buildTree(list);
-      // 树解成list
-      if(tree) _list = yapi.commons.tree2list(tree);
-      // * 筛选出选中的目录Object: 重要
-      if(catid) {
-        selected = _list.filter(item => {
-          return Number(catid) === Number(item._id)
-        })[0];
-        // 获取所有下级菜单id
-        children = yapi.commons.getChildren(selected);
-      }
-      // 筛选所有下级
-      if(catid && children) {
-        list = list.filter(item => {
-          return children.indexOf(Number(item._id)) > -1 ;
-        })
-      }
-      // 去除没有接口的目录
-      list = list.filter(item => {
-         return item.list && item.list.length > 0;
-      })
-
-      switch (type) {
-        case 'markdown': { // MD文件
-          tp = await createMarkdown.bind(this)(list, false);
-          ctx.set('Content-Disposition', `attachment; filename=api.md`);
-          return (ctx.body = tp);
-        }
-        case 'json': { // json
-         // let data = this.handleExistId(exportList);
-          tp = JSON.stringify(tree, null, 2);
-          ctx.set('Content-Disposition', `attachment; filename=api.json`);
-          return (ctx.body = tp);
-        }
-        default: {
-          //默认为html
-          tp = await createHtml.bind(this)(list);
-          ctx.set('Content-Disposition', `attachment; filename=api.html`);
-          return (ctx.body = tp);
-        }
-      }
-    } catch (error) {
-      yapi.commons.log(error, 'error');
-      ctx.body = yapi.commons.resReturn(null, 502, '下载出错');
+        return newResult;
     }
 
-    async function createHtml(list) {
-      let md = await createMarkdown.bind(this)(list, true);
-      let markdown = markdownIt({ html: true, breaks: true });
-      markdown.use(markdownItAnchor); // Optional, but makes sense as you really want to link to something
-      markdown.use(markdownItTableOfContents, {
-        markerPattern: /^\[toc\]/im
-      });
+    handleExistId(data) {
+        function delArrId(arr, fn) {
+            if (!Array.isArray(arr)) return;
+            arr.forEach(item => {
+                delete item._id;
+                delete item.__v;
+                delete item.uid;
+                delete item.edit_uid;
+                delete item.catid;
+                delete item.project_id;
 
-      // require('fs').writeFileSync('./a.markdown', md);
-      let tp = unescape(markdown.render(md));
-      // require('fs').writeFileSync('./a.html', tp);
-      let left;
-      // console.log('tp',tp);
-      let content = tp.replace(
-          /<div\s+?class="table-of-contents"\s*>[\s\S]*?<\/ul>\s*<\/div>/gi,
-          function(match) {
-            left = match;
-            return '';
-          }
-      );
+                if (typeof fn === 'function') fn(item);
+            });
+        }
 
-      return createHtml5(left || '', content);
+        delArrId(data, function (item) {
+            delArrId(item.list, function (api) {
+                delArrId(api.req_body_form);
+                delArrId(api.req_params);
+                delArrId(api.req_query);
+                delArrId(api.req_headers);
+                if (api.query_path && typeof api.query_path === 'object') {
+                    delArrId(api.query_path.params);
+                }
+            });
+        });
+
+        return data;
     }
 
-    function createHtml5(left, tp) {
-      //html5模板
-      let html = `<!DOCTYPE html>
+    async exportData(ctx) {
+        let pid = ctx.request.query.pid;
+        let type = ctx.request.query.type;
+        let status = ctx.request.query.status;
+        let isWiki = ctx.request.query.isWiki;
+        let catid = ctx.request.query.catid;
+
+        if (!pid) {
+            ctx.body = yapi.commons.resReturn(null, 200, 'pid 不为空');
+        }
+        let curProject, wikiData;
+        let tp = '';
+        try {
+            curProject = await this.projectModel.get(pid);
+            if (isWiki === 'true') {
+                const wikiModel = require('../yapi-plugin-wiki/wikiModel.js');
+                wikiData = await yapi.getInst(wikiModel).get(pid);
+            }
+            ctx.set('Content-Type', 'application/octet-stream');
+
+            // *** 导出结果适配树 ***
+            let list = [], tree = [], _list = tree, selected = {}, children = [];
+            // 查询项目下所有目录及他们下的接口
+            list = await this.handleListClass(pid, status);
+            // 构造树: 给每个list加上children属性
+            if (list) tree = yapi.commons.buildTree(list);
+            // 树解成list
+            if (tree) _list = yapi.commons.tree2list(tree);
+            // * 筛选出选中的目录Object: 重要
+            if (catid) {
+                selected = _list.filter(item => {
+                    return Number(catid) === Number(item._id)
+                })[0];
+                // 获取所有下级菜单id
+                if (selected) {
+                    children = yapi.commons.getChildren(selected);
+                } else {
+
+                }
+            }
+            // 筛选所有下级
+            if (catid && children && children.length > 0) {
+                console.log('))) catid children', catid, children)
+                console.log('))) list', list)
+
+                list = list.filter(item => {
+                    return children.indexOf(Number(item._id)) > -1;
+                })
+            }
+
+            // 去除没有接口的目录
+            list = list.filter(item => {
+                return item.list && item.list.length > 0;
+            })
+
+
+            switch (type) {
+                case 'markdown': { // MD文件
+                    tp = await createMarkdown.bind(this)(list, false);
+                    ctx.set('Content-Disposition', `attachment; filename=api.md`);
+                    return (ctx.body = tp);
+                }
+                case 'json': { // json
+                    // let data = this.handleExistId(exportList);
+                    tp = JSON.stringify(tree, null, 2);
+                    ctx.set('Content-Disposition', `attachment; filename=api.json`);
+                    return (ctx.body = tp);
+                }
+                default: {
+                    //默认为html
+                    tp = await createHtml.bind(this)(list);
+                    ctx.set('Content-Disposition', `attachment; filename=api.html`);
+                    return (ctx.body = tp);
+                }
+            }
+        } catch (error) {
+            yapi.commons.log(error, 'error');
+            ctx.body = yapi.commons.resReturn(null, 502, '下载出错');
+        }
+
+        async function createHtml(list) {
+            let md = await createMarkdown.bind(this)(list, true);
+            let markdown = markdownIt({html: true, breaks: true});
+            markdown.use(markdownItAnchor); // Optional, but makes sense as you really want to link to something
+            markdown.use(markdownItTableOfContents, {
+                markerPattern: /^\[toc\]/im
+            });
+
+            // require('fs').writeFileSync('./a.markdown', md);
+            let tp = unescape(markdown.render(md));
+            // require('fs').writeFileSync('./a.html', tp);
+            let left;
+            // console.log('tp',tp);
+            let content = tp.replace(
+                /<div\s+?class="table-of-contents"\s*>[\s\S]*?<\/ul>\s*<\/div>/gi,
+                function (match) {
+                    left = match;
+                    return '';
+                }
+            );
+
+            return createHtml5(left || '', content);
+        }
+
+        function createHtml5(left, tp) {
+            //html5模板
+            let html = `<!DOCTYPE html>
       <html>
       <head>
       <title>${curProject.name}</title>
@@ -191,25 +200,25 @@ class exportController extends baseController {
       </body>
       </html>
       `;
-      return html;
-    }
+            return html;
+        }
 
-    function createMarkdown(list, isToc) {
-      //拼接markdown
-      //模板
-      let mdTemplate = ``;
-      try {
-        // 项目名称信息
-        mdTemplate += md.createProjectMarkdown(curProject, wikiData);
-        // 分类信息
-        mdTemplate += md.createClassMarkdown(curProject, list, isToc);
-        return mdTemplate;
-      } catch (e) {
-        yapi.commons.log(e, 'error');
-        ctx.body = yapi.commons.resReturn(null, 502, '下载出错');
-      }
+        function createMarkdown(list, isToc) {
+            //拼接markdown
+            //模板
+            let mdTemplate = ``;
+            try {
+                // 项目名称信息
+                mdTemplate += md.createProjectMarkdown(curProject, wikiData);
+                // 分类信息
+                mdTemplate += md.createClassMarkdown(curProject, list, isToc);
+                return mdTemplate;
+            } catch (e) {
+                yapi.commons.log(e, 'error');
+                ctx.body = yapi.commons.resReturn(null, 502, '下载出错');
+            }
+        }
     }
-  }
 }
 
 module.exports = exportController;

@@ -12,16 +12,16 @@ import { json5_parse } from '../../../client/common';
 import _ from 'underscore';
 
 @connect(
-  state => {
-    return {
-      list: state.mockCol.list,
-      currInterface: state.inter.curdata,
-      currProject: state.project.currProject
-    };
-  },
-  {
-    fetchMockCol
-  }
+    state => {
+      return {
+        list: state.mockCol.list,
+        currInterface: state.inter.curdata,
+        currProject: state.project.currProject
+      };
+    },
+    {
+      fetchMockCol
+    }
 )
 @withRouter
 export default class MockCol extends Component {
@@ -151,10 +151,10 @@ export default class MockCol extends Component {
     let userFilters = [];
     let userObj = {};
     _.isArray(data) &&
-      data.forEach(item => {
-        ipObj[item.ip_enable ? item.ip : ''] = '';
-        userObj[item.username] = '';
-      });
+    data.forEach(item => {
+      ipObj[item.ip_enable ? item.ip : ''] = '';
+      userObj[item.username] = '';
+    });
     ipFilters = Object.keys(Object.assign(ipObj)).map(value => {
       if (!value) {
         value = '无过滤';
@@ -181,7 +181,7 @@ export default class MockCol extends Component {
           return text;
         },
         onFilter: (value, record) =>
-          (record.ip === value && record.ip_enable) || (value === '无过滤' && !record.ip_enable),
+            (record.ip === value && record.ip_enable) || (value === '无过滤' && !record.ip_enable),
         filters: ipFilters
       },
       {
@@ -204,66 +204,66 @@ export default class MockCol extends Component {
         render: (_id, recode) => {
           // console.log(recode)
           return (
-            !isGuest && (
-              <div>
+              !isGuest && (
+                  <div>
                 <span style={{ marginRight: 5 }}>
                   <Button size="small" onClick={this.openModal(recode)}>
                     编辑
                   </Button>
                 </span>
-                <span style={{ marginRight: 5 }}>
+                    <span style={{ marginRight: 5 }}>
                   <Popconfirm
-                    title="你确定要删除这条期望?"
-                    onConfirm={() => this.deleteCase(_id)}
-                    okText="确定"
-                    cancelText="取消"
+                      title="你确定要删除这条期望?"
+                      onConfirm={() => this.deleteCase(_id)}
+                      okText="确定"
+                      cancelText="取消"
                   >
                     <Button size="small" onClick={() => {}}>
                       删除
                     </Button>
                   </Popconfirm>
                 </span>
-                <span>
+                    <span>
                   <Button size="small" onClick={() => this.openMockCase(_id, recode.case_enable)}>
                     {recode.case_enable ? <span>已开启</span> : <span>未开启</span>}
                   </Button>
                 </span>
-              </div>
-            )
+                  </div>
+              )
           );
         }
       }
     ];
 
     return (
-      <div>
-        <div style={{ marginBottom: 8 }}>
-          <Button type="primary" onClick={this.openModal(initCaseData, true)} disabled={isGuest}>
-            添加期望
-          </Button>
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href={constants.docHref.adv_mock_case}
-            style={{ marginLeft: 8 }}
-          >
-            <Tooltip title="点击查看文档">
-              <Icon type="question-circle-o" />
-            </Tooltip>
-          </a>
+        <div>
+          <div style={{ marginBottom: 8 }}>
+            <Button type="primary" onClick={this.openModal(initCaseData, true)} disabled={isGuest}>
+              添加期望
+            </Button>
+            <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={constants.docHref.adv_mock_case}
+                style={{ marginLeft: 8 }}
+            >
+              <Tooltip title="点击查看文档">
+                <Icon type="question-circle-o" />
+              </Tooltip>
+            </a>
+          </div>
+          <Table columns={columns} dataSource={data} pagination={false} rowKey="_id" />
+          {caseDesModalVisible && (
+              <CaseDesModal
+                  visible={caseDesModalVisible}
+                  isAdd={isAdd}
+                  caseData={caseData}
+                  onOk={this.handleOk}
+                  onCancel={() => this.setState({ caseDesModalVisible: false })}
+                  ref={this.saveFormRef}
+              />
+          )}
         </div>
-        <Table columns={columns} dataSource={data} pagination={false} rowKey="_id" />
-        {caseDesModalVisible && (
-          <CaseDesModal
-            visible={caseDesModalVisible}
-            isAdd={isAdd}
-            caseData={caseData}
-            onOk={this.handleOk}
-            onCancel={() => this.setState({ caseDesModalVisible: false })}
-            ref={this.saveFormRef}
-          />
-        )}
-      </div>
     );
   }
 }

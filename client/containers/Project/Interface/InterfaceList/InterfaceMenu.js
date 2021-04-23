@@ -208,14 +208,14 @@ class InterfaceMenu extends Component {
         let id = data._id;
         let catid = data.catid;
         const ref = confirm({
-            title: '您确认删除此接口????',
+            title: '您确认删除此接口?',
             content: '温馨提示：接口删除后，无法恢复',
             okText: '确认',
             cancelText: '取消',
             async onOk() {
                 await that.props.deleteInterfaceData(id, that.props.projectId);
                 await that.getList();
-                await that.props.fetchInterfaceCatList({catid});
+                await that.props.fetchInterfaceCatList({catid, project_id: that.props.projectId});
                 ref.destroy();
                 that.props.history.push(
                     '/project/' + that.props.match.params.id + '/interface/api/cat_' + catid
@@ -310,102 +310,102 @@ class InterfaceMenu extends Component {
         const dropIndex = Number(dropPos[dropPos.length - 1]);
         const data = [...this.state.list];
 
-       /* const loop = (data, key, callback) => {
-            for (let i = 0; i < data.length; i++) {
-                if (`${data[i]._id}` === key && data[i].list === undefined) {
-                    return callback(data[i], i, data);
-                }
-                if (data[i].list) {
-                    loop(data[i].list, key, callback);
-                }
-            }
-        };
+        /* const loop = (data, key, callback) => {
+             for (let i = 0; i < data.length; i++) {
+                 if (`${data[i]._id}` === key && data[i].list === undefined) {
+                     return callback(data[i], i, data);
+                 }
+                 if (data[i].list) {
+                     loop(data[i].list, key, callback);
+                 }
+             }
+         };
 
-        const loopCat = (data, key, callback) => {
-            for (let i = 0; i < data.length; i++) {
-                if (`cat_${data[i]._id}` === key) {
-                    return callback(data[i], i, data);
-                }
-                if (data[i].children) {
-                    loopCat(data[i].children, key, callback);
-                }
-            }
-        };*/
+         const loopCat = (data, key, callback) => {
+             for (let i = 0; i < data.length; i++) {
+                 if (`cat_${data[i]._id}` === key) {
+                     return callback(data[i], i, data);
+                 }
+                 if (data[i].children) {
+                     loopCat(data[i].children, key, callback);
+                 }
+             }
+         };*/
 
 
         // 0 cat to api
         // 1 cat to cat
         // 2 api to cat
         // 3 api to api
-/*        let dragType = 'api_to_api';
-        if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat") === -1) {
-            dragType = 'cat_to_api';
-        } else if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat_") !== -1) {
-            dragType = 'cat_to_cat';
-        } else if (dragKey.indexOf("cat_") === -1 && dropKey.indexOf("cat_") !== -1) {
-            dragType = 'api_to_cat';
-        }
+        /*        let dragType = 'api_to_api';
+                if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat") === -1) {
+                    dragType = 'cat_to_api';
+                } else if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat_") !== -1) {
+                    dragType = 'cat_to_cat';
+                } else if (dragKey.indexOf("cat_") === -1 && dropKey.indexOf("cat_") !== -1) {
+                    dragType = 'api_to_cat';
+                }
 
-        console.log('> dragType', dragType)
-        console.log('> dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex');
-        console.log(dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex)
-        console.log('- data', data)
-        */
+                console.log('> dragType', dragType)
+                console.log('> dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex');
+                console.log(dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex)
+                console.log('- data', data)
+                */
 
         // Find dragObject
-/*        let dragObj;
-        if (dragKey.indexOf("cat_") === -1) {
-            loop(data, dragKey, (item, index, arr) => {
-                arr.splice(index, 1);
-                dragObj = item;
-            });
-        } else {
-            loopCat(data, dragKey, (item, index, arr) => {
-                arr.splice(index, 1);
-                dragObj = item;
-            });
-        }
-
-        let dropObj;
-        if (dropKey.indexOf("cat_") === -1) {
-            loop(data, dropKey, (item, index, arr) => {
-                arr.splice(index, 1);
-                dropObj = item;
-            });
-        } else {
-            loopCat(data, dropKey, (item, index, arr) => {
-                arr.splice(index, 1);
-                dropObj = item;
-            });
-        }
-
-        let changes;
-        switch (dragType) {
-            case "cat_to_api": {
-                axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj.catid}).then();
-                break;
-            }
-            case "cat_to_cat": {
-                if (dragObj.parent_id === dropObj.parent_id) {
-                    changes = arrayChangeIndex(list, dragIndex - 1, dropIndex - 1);
-                    axios.post('/api/interface/up_cat_index', changes).then();
+        /*        let dragObj;
+                if (dragKey.indexOf("cat_") === -1) {
+                    loop(data, dragKey, (item, index, arr) => {
+                        arr.splice(index, 1);
+                        dragObj = item;
+                    });
                 } else {
-                    axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj._id}).then();
+                    loopCat(data, dragKey, (item, index, arr) => {
+                        arr.splice(index, 1);
+                        dragObj = item;
+                    });
                 }
-                break;
-            }
-            case "api_to_cat": {
-                axios.post('/api/interface/up', {id: dragKey, catid: dropObj._id});
-                break;
-            }
-            default: {
-                // 同一个分类下的接口交换顺序
-                let colList = (list[dropCatIndex].children)[dropCatIndex].list;
-                changes = arrayChangeIndex(colList, dragIndex, dropIndex);
-                axios.post('/api/interface/up_index', changes).then();
-            }
-        }
-        this.props.fetchInterfaceMenuTree(this.props.projectId);*/
+
+                let dropObj;
+                if (dropKey.indexOf("cat_") === -1) {
+                    loop(data, dropKey, (item, index, arr) => {
+                        arr.splice(index, 1);
+                        dropObj = item;
+                    });
+                } else {
+                    loopCat(data, dropKey, (item, index, arr) => {
+                        arr.splice(index, 1);
+                        dropObj = item;
+                    });
+                }
+
+                let changes;
+                switch (dragType) {
+                    case "cat_to_api": {
+                        axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj.catid}).then();
+                        break;
+                    }
+                    case "cat_to_cat": {
+                        if (dragObj.parent_id === dropObj.parent_id) {
+                            changes = arrayChangeIndex(list, dragIndex - 1, dropIndex - 1);
+                            axios.post('/api/interface/up_cat_index', changes).then();
+                        } else {
+                            axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj._id}).then();
+                        }
+                        break;
+                    }
+                    case "api_to_cat": {
+                        axios.post('/api/interface/up', {id: dragKey, catid: dropObj._id});
+                        break;
+                    }
+                    default: {
+                        // 同一个分类下的接口交换顺序
+                        let colList = (list[dropCatIndex].children)[dropCatIndex].list;
+                        changes = arrayChangeIndex(colList, dragIndex, dropIndex);
+                        axios.post('/api/interface/up_index', changes).then();
+                    }
+                }
+                this.props.fetchInterfaceMenuTree(this.props.projectId);*/
 
     };
 
@@ -450,8 +450,7 @@ class InterfaceMenu extends Component {
                     onClick={e => {
                         e.stopPropagation();
                         this.setState({
-                            curCatdata: {
-                            }
+                            curCatdata: {}
                         })
                         this.changeModal('add_cat_modal_visible', true);
                     }}

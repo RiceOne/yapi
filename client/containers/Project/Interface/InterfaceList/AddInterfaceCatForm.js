@@ -107,6 +107,7 @@ class AddInterfaceCatForm extends Component {
                             dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
                             placeholder="请选择父级分类"
                             treeDefaultExpandAll={false}
+                            allowClear
                         />)}
                 </FormItem>
                 <FormItem {...formItemLayout} label="分类名">
