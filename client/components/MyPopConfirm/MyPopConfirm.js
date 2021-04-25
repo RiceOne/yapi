@@ -42,6 +42,7 @@ class MyPopConfirm extends Component {
         <Button key="back" onClick={this.no}>取 消</Button>,
         <Button key="submit" onClick={this.yes}>确 定</Button>
       ]}
+      maskClosable={false}
     >
       <p>{this.props.msg}</p>
     </Modal>);

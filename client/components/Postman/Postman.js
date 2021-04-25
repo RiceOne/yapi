@@ -605,6 +605,7 @@ export default class Run extends Component {
             footer={null}
             width={800}
             className="env-modal"
+            maskClosable={false}
           >
             <ProjectEnv projectId={this.props.data.project_id} onOk={this.handleEnvOk} />
           </Modal>

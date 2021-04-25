@@ -293,6 +293,7 @@ class UpDateModal extends Component {
         visible={isUpdateModalShow}
         onOk={this.handleOk}
         onCancel={this.handleCancel}
+        maskClosable={false}
       >
         <Form>
           <FormItem {...formItemLayout} label="项目名称">

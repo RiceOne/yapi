@@ -266,6 +266,7 @@ class List extends Component {
                 }}
                 footer={null}
                 className="addcatmodal"
+                maskClosable={false}
             >
               <AddUserForm
                   onSubmit={this.handleAddUser}

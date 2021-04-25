@@ -163,6 +163,7 @@ class Content extends Component {
             title="你即将离开编辑页面"
             visible={this.state.visible}
             onCancel={this.handleCancel}
+            maskClosable={false}
             footer={[
               <Button key="back" onClick={this.handleCancel}>
                 取 消

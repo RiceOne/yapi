@@ -88,6 +88,7 @@ function postman(importDataModule) {
 
   function run(res) {
     try {
+      console.log('postman-res', res)
       res = JSON.parse(res);
       let interData = res.requests;
       let interfaceData = { apis: [], cats: [] };

@@ -65,7 +65,8 @@ export default class ProjectInterfaceSync extends Component {
             _id: null,
             delIcon: null,
             currentKey: -2,
-            menuTree: []
+            menuTree: [],
+            saveLoading: false
         };
     }
 
@@ -82,24 +83,28 @@ export default class ProjectInterfaceSync extends Component {
         }
         form.validateFields(async (err, values) => {
             if (!err) {
-                console.log('form', values);
                 let assignValue = Object.assign(params, values);
-                await axios.post('/api/plugin/autoSync/save', assignValue).then(res => {
-                    if (res.data.errcode === 0) {
-                        message.success('保存成功');
-                    } else {
-                        message.error(res.data.errmsg);
-                    }
-                });
-                this.getSyncData();
+                this.setState({saveLoading: true})
+                if(await this.saveValidSwaggerUrl(assignValue.sync_json_url)) {
+                    await axios.post('/api/plugin/autoSync/save', assignValue).then(res => {
+                        if (res.data.errcode === 0) {
+                            message.success('保存成功');
+                        } else {
+                            //message.error(res.data.errmsg);
+                        }
+                    });
+                    this.getSyncData();
+                } else {
+                    message.error('保存失败：Swagger地址不正确！')
+                }
+                this.setState({saveLoading: false})
             }
         });
     };
 
     validSwaggerUrl = async (rule, value, callback) => {
-        console.log('同步开关', this.state.sync_data.is_sync_open)
         if (!value) return;
-        if (this.state.sync_data && this.state.sync_data.is_sync_open == true) {
+        if (this.state.sync_data) {
             try {
                 await this.props.handleSwaggerUrlData(value);
             } catch (e) {
@@ -107,6 +112,20 @@ export default class ProjectInterfaceSync extends Component {
             }
         }
         callback()
+    }
+
+    saveValidSwaggerUrl = async(url) => {
+        console.log('url', url)
+        if (!url) return false;
+        if (this.state.sync_data && this.state.sync_data.is_sync_open) {
+            try {
+                await this.props.handleSwaggerUrlData(url);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     componentWillMount() {
@@ -121,6 +140,12 @@ export default class ProjectInterfaceSync extends Component {
 
         this.getSyncData();
         this.getMenuTree();
+
+        // 初始化选中第一条
+       /* this.setState({
+            sync_data: this.state.env[0],
+            currentKey: 0
+        });*/
     }
 
     async getSyncData() {
@@ -128,11 +153,13 @@ export default class ProjectInterfaceSync extends Component {
         let result = await axios.get('/api/plugin/autoSync/get?project_id=' + projectId);
         if (result.data.errcode === 0) {
             if (result.data.data) {
-                console.log('sycnData', result.data.data)
                 this.setState({
                     //sync_data: result.data.data
-                    env: result.data.data
-                });
+                    env: result.data.data,
+                    // 默认选中第一行
+                    sync_data:  result.data.data[0],
+                    currentKey: 0
+                })
             }
         }
     }
@@ -388,9 +415,6 @@ export default class ProjectInterfaceSync extends Component {
                                                     {
                                                         required: true,
                                                         message: '输入swagger地址'
-                                                    },
-                                                    {
-                                                        validator: this.validSwaggerUrl
                                                     }
                                                 ],
                                                 validateTrigger: 'onBlur',
@@ -417,6 +441,7 @@ export default class ProjectInterfaceSync extends Component {
                                     </div>
                                     <FormItem {...tailFormItemLayout}>
                                         <Button type="primary" htmlType="submit" icon="save" size="large"
+                                                loading={this.state.saveLoading}
                                                 onClick={this.handleSubmit}>
                                             保存
                                         </Button>

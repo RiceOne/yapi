@@ -284,6 +284,7 @@ export default class GroupList extends Component {
             onOk={this.addGroup}
             onCancel={this.hideModal}
             className="add-group-modal"
+            maskClosable={false}
           >
             <Row gutter={6} className="modal-input">
               <Col span="5">

@@ -79,6 +79,7 @@ export default class AddColModal extends Component {
         visible={this.props.visible}
         onOk={() => this.props.onOk(id, this.state.caseName)}
         onCancel={this.props.onCancel}
+        maskClosable={false}
       >
         <Row gutter={6} className="modal-input">
           <Col span="5">

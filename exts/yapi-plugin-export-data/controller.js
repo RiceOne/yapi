@@ -88,13 +88,13 @@ class exportController extends baseController {
             ctx.set('Content-Type', 'application/octet-stream');
 
             // *** 导出结果适配树 ***
-            let list = [], tree = [], _list = tree, selected = {}, children = [];
+            let list = [], treeList = [], _list = [], selected = {}, children = [];
             // 查询项目下所有目录及他们下的接口
             list = await this.handleListClass(pid, status);
             // 构造树: 给每个list加上children属性
-            if (list) tree = yapi.commons.buildTree(list);
+            if (list) treeList = yapi.commons.buildTree(list);
             // 树解成list
-            if (tree) _list = yapi.commons.tree2list(tree);
+            if (treeList) _list = yapi.commons.tree2list(treeList);
             // * 筛选出选中的目录Object: 重要
             if (catid) {
                 selected = _list.filter(item => {
@@ -109,9 +109,6 @@ class exportController extends baseController {
             }
             // 筛选所有下级
             if (catid && children && children.length > 0) {
-                console.log('))) catid children', catid, children)
-                console.log('))) list', list)
-
                 list = list.filter(item => {
                     return children.indexOf(Number(item._id)) > -1;
                 })
@@ -122,7 +119,6 @@ class exportController extends baseController {
                 return item.list && item.list.length > 0;
             })
 
-
             switch (type) {
                 case 'markdown': { // MD文件
                     tp = await createMarkdown.bind(this)(list, false);
@@ -131,7 +127,16 @@ class exportController extends baseController {
                 }
                 case 'json': { // json
                     // let data = this.handleExistId(exportList);
-                    tp = JSON.stringify(tree, null, 2);
+
+                    let data = [];
+                    if (selected) {
+                        data.push(selected);
+                    } else {
+                        data = [].concat(treeList);
+                    }
+
+                    tp = JSON.stringify(data, null, 2);
+
                     ctx.set('Content-Disposition', `attachment; filename=api.json`);
                     return (ctx.body = tp);
                 }

@@ -440,6 +440,7 @@ class InterfaceList extends Component {
                         onCancel={() => this.setState({visible: false})}
                         footer={null}
                         className="addcatmodal"
+                        maskClosable={false}
                     >
                         <AddInterfaceForm
                             projectId={projectId}

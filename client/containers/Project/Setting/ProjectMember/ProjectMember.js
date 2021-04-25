@@ -279,6 +279,7 @@ class ProjectMember extends Component {
           ),
         key: 'action',
         className: 'member-opration',
+        align: 'right',
         render: (text, record) => {
           if (this.state.role === 'owner' || this.state.role === 'admin') {
             return (
@@ -334,6 +335,7 @@ class ProjectMember extends Component {
               visible={this.state.visible}
               onOk={this.handleOk}
               onCancel={this.handleCancel}
+              maskClosable={false}
             >
               <Row gutter={6} className="modal-input">
                 <Col span="5">
@@ -364,6 +366,7 @@ class ProjectMember extends Component {
             visible={this.state.modalVisible}
             onOk={this.handleModalOk}
             onCancel={this.handleModalCancel}
+            maskClosable={false}
           >
             <Row gutter={6} className="modal-input">
               <Col span="5">

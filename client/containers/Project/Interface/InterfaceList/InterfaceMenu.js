@@ -31,7 +31,8 @@ const headHeight = 240; // menu顶部到网页顶部部分的高度
             list: state.inter.list,
             inter: state.inter.curdata,
             curProject: state.project.currProject,
-            expands: []
+            expands: [],
+            autoExpandParent: true
         };
     },
     {
@@ -287,13 +288,16 @@ class InterfaceMenu extends Component {
     onFilter = e => {
         this.setState({
             filter: e.target.value,
-            list: JSON.parse(JSON.stringify(this.props.list))
+            list: JSON.parse(JSON.stringify(this.props.list)),
+            autoExpandParent: true
         });
     };
 
     onExpand = e => {
+        console.log('???', e)
         this.setState({
-            expands: e
+            expands: e,
+            autoExpandParent: false
         });
     };
 
@@ -439,7 +443,7 @@ class InterfaceMenu extends Component {
     render() {
         const projectId = this.props.projectId;
         const matchParams = this.props.match.params;
-        const curCatdata = this.state.curCatdata;
+        const {curCatdata, autoExpandParent} = this.state;
 
         // let menuList = this.state.list;
         const searchBox = (
@@ -465,6 +469,7 @@ class InterfaceMenu extends Component {
                         onCancel={() => this.changeModal('visible', false)}
                         footer={null}
                         className="addcatmodal"
+                        maskClosable={false}
                     >
                         <AddInterfaceForm
                             projectId={projectId}
@@ -490,11 +495,12 @@ class InterfaceMenu extends Component {
                         }}
                         footer={null}
                         className="addcatmodal"
+                        maskClosable={false}
                     >
                         <AddInterfaceCatForm
                             type={'add'}
                             projectId={projectId}
-                            catdata={this.state.curCatdata}
+                            catdata={curCatdata}
                             onCancel={() => this.changeModal('add_cat_modal_visible', false)}
                             onSubmit={this.handleAddInterfaceCat}
                         />
@@ -515,11 +521,12 @@ class InterfaceMenu extends Component {
                         }}
                         footer={null}
                         className="addcatmodal"
+                        maskClosable={false}
                     >
                         <AddInterfaceCatForm
                             type={'addsub'}
                             projectId={projectId}
-                            catdata={this.state.curCatdata}
+                            catdata={curCatdata}
                             onCancel={() => this.changeModal('add_subcat_modal_visible', false)}
                             onSubmit={this.handleAddInterfaceCat}
                         />
@@ -535,11 +542,12 @@ class InterfaceMenu extends Component {
                         onCancel={() => this.changeModal('change_cat_modal_visible', false)}
                         footer={null}
                         className="addcatmodal"
+                        maskClosable={false}
                     >
                         <AddInterfaceCatForm
                             type={'edit'}
                             projectId={projectId}
-                            catdata={this.state.curCatdata}
+                            catdata={curCatdata}
                             onCancel={() => this.changeModal('change_cat_modal_visible', false)}
                             onSubmit={this.handleChangeInterfaceCat}
                         />
@@ -726,6 +734,7 @@ class InterfaceMenu extends Component {
             let res = this.filterList(this.state.list);
             menuList = res.menuList;
             currentKes.expands = res.arr;
+            console.log('currentKes.expands',  currentKes.expands)
         } else {
             menuList = this.state.list;
         }
@@ -740,14 +749,14 @@ class InterfaceMenu extends Component {
                     >
                         <Tree
                             className="interface-list"
-                            defaultExpandedKeys={currentKes.expands}
-                            defaultSelectedKeys={currentKes.selects}
+                            defaultExpandAll
                             expandedKeys={currentKes.expands}
                             selectedKeys={currentKes.selects}
                             onSelect={this.onSelect}
                             onExpand={this.onExpand}
-                            draggable={true}
+                            draggable={false}
                             onDrop={this.onDrop}
+                            autoExpandParent={autoExpandParent}
                         >
                             <TreeNode
                                 className="item-all-interface"

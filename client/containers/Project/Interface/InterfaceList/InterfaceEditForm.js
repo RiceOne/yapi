@@ -809,6 +809,7 @@ class InterfaceEditForm extends Component {
           onOk={this.handleBulkOk}
           onCancel={this.handleBulkCancel}
           okText="导入"
+          maskClosable={false}
         >
           <div>
             <TextArea

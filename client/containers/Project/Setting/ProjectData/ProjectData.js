@@ -538,7 +538,7 @@ class ProjectData extends Component {
                                     <div>
                                         <p className="export-desc">{exportDataModule[this.state.curExportType].desc}</p>
                                         <a
-                                            target="_blank"
+                                            target="_self"
                                             rel="noopener noreferrer"
                                             href={exportHref}>
                                             <Button className="export-button" type="primary" size="large">

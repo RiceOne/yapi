@@ -29,7 +29,6 @@ class AddInterfaceCatForm extends Component {
         this.getMenuTree();
     }
 
-
     handleSubmit = e => {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
@@ -98,7 +97,7 @@ class AddInterfaceCatForm extends Component {
                                 message: '请输入分类名称!'
                             }
                         ],
-                        initialValue: _catdata ? _catdata.parent_id + '' || null : null
+                        initialValue: _catdata ? (_catdata.parent_id + '' || null) : null
                     })(
                         <TreeSelect
                             disabled={type === 'addsub'}
@@ -107,7 +106,6 @@ class AddInterfaceCatForm extends Component {
                             dropdownStyle={{maxHeight: 400, overflow: 'auto'}}
                             placeholder="请选择父级分类"
                             treeDefaultExpandAll={false}
-                            allowClear
                         />)}
                 </FormItem>
                 <FormItem {...formItemLayout} label="分类名">

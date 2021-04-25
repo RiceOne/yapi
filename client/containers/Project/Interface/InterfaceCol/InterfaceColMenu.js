@@ -27,7 +27,7 @@ const ColModalForm = Form.create()(props => {
   const { visible, onCancel, onCreate, form, title } = props;
   const { getFieldDecorator } = form;
   return (
-    <Modal visible={visible} title={title} onCancel={onCancel} onOk={onCreate}>
+    <Modal visible={visible} title={title} onCancel={onCancel} onOk={onCreate} maskClosable={false}>
       <Form layout="vertical">
         <FormItem label="集合名">
           {getFieldDecorator('colName', {
@@ -621,6 +621,7 @@ export default class InterfaceColMenu extends Component {
           onCancel={this.handleImportCancel}
           className="import-case-modal"
           width={800}
+          maskClosable={false}
         >
           <ImportInterface currProjectId={currProjectId} selectInterface={this.selectInterface} />
         </Modal>

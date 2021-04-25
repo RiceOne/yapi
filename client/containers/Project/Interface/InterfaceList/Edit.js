@@ -216,6 +216,7 @@ class InterfaceEdit extends Component {
           onOk={this.handleOk}
           onCancel={this.handleCancel}
           okText="保存"
+          maskClosable={false}
         >
           <div className="tag-modal-center">
             <ProjectTag tagMsg={tag} ref={this.tagSubmit} />

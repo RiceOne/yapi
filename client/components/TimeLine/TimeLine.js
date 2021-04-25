@@ -225,6 +225,7 @@ class TimeTree extends Component {
           visible={this.state.visible}
           footer={null}
           onCancel={this.handleCancel}
+          maskClosable={false}
         >
           <i>注： 绿色代表新增内容，红色代表删除内容</i>
           <div className="project-interface-change-content">

@@ -897,6 +897,7 @@ class InterfaceColContent extends Component {
             onCancel={this.cancelCommonSetting}
             width={'1000px'}
             style={defaultModalStyle}
+            maskClosable={false}
           >
           <div className="common-setting-modal">
             <Row className="setting-item">
@@ -1112,6 +1113,7 @@ class InterfaceColContent extends Component {
           visible={this.state.visible}
           onCancel={this.handleCancel}
           footer={null}
+          maskClosable={false}
         >
           <CaseReport {...this.reports[this.state.curCaseid]} />
         </Modal>
@@ -1151,6 +1153,7 @@ class InterfaceColContent extends Component {
             onCancel={this.handleAuto}
             className="autoTestsModal"
             footer={null}
+            maskClosable={false}
           >
             <Row type="flex" justify="space-around" className="row" align="top">
               <Col span={3} className="label" style={{ paddingTop: '16px' }}>

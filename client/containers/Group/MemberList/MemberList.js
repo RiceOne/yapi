@@ -223,6 +223,7 @@ class MemberList extends Component {
             ''
           ),
         key: 'action',
+        align: 'right',
         className: 'member-opration',
         render: (text, record) => {
           if (this.state.role === 'owner' || this.state.role === 'admin') {
@@ -288,6 +289,7 @@ class MemberList extends Component {
             visible={this.state.visible}
             onOk={this.handleOk}
             onCancel={this.handleCancel}
+            maskClosable={false}
           >
             <Row gutter={6} className="modal-input">
               <Col span="5">
