@@ -31,8 +31,6 @@ const headHeight = 240; // menu顶部到网页顶部部分的高度
             list: state.inter.list,
             inter: state.inter.curdata,
             curProject: state.project.currProject,
-            expands: [],
-            autoExpandParent: true
         };
     },
     {
@@ -76,9 +74,13 @@ class InterfaceMenu extends Component {
             add_subcat_modal_visible: false,
             change_cat_modal_visible: false,
             del_cat_modal_visible: false,
-            curCatdata: {},
-            expands: null,
-            list: []
+            expands: [],
+            autoExpandParent: true,
+            list: [],
+            menuList: [],
+            menuMap: null,
+            interfaceList: [],
+            filter: '',
         };
     }
 
@@ -105,9 +107,20 @@ class InterfaceMenu extends Component {
 
     async getList() {
         let r = await this.props.fetchInterfaceMenuTree(this.props.projectId);
-        this.setState({
-            list: r.payload.data.data
-        });
+        if (r.payload.data.data) {
+            this.setState({
+                    list: r.payload.data.data
+                },
+                () => {
+                    const {menuList, interfaceList} = this.getDataList(r.payload.data.data);
+                    let menuMap = new Map();
+                    menuList.map(item => {
+                        menuMap.set(item._id, item)
+                    });
+                    this.setState({menuList, interfaceList, menuMap})
+                });
+        }
+
     }
 
     componentWillMount() {
@@ -285,16 +298,8 @@ class InterfaceMenu extends Component {
         });
     };
 
-    onFilter = e => {
-        this.setState({
-            filter: e.target.value,
-            list: JSON.parse(JSON.stringify(this.props.list)),
-            autoExpandParent: true
-        });
-    };
 
     onExpand = e => {
-        console.log('???', e)
         this.setState({
             expands: e,
             autoExpandParent: false
@@ -304,342 +309,283 @@ class InterfaceMenu extends Component {
     // 推拽
     onDrop = async info => {
 
-        const {list} = this.props;
-        const dropKey = info.node.props.eventKey;
-        const dragKey = info.dragNode.props.eventKey;
-        const dropPos = info.node.props.pos.split('-');
-        const dropCatIndex = info.node.props.pos.split('-')[1] - 1;
-        const dragPos = info.dragNode.props.pos.split('-');
-        const dragIndex = Number(dragPos[dragPos.length - 1]);
-        const dropIndex = Number(dropPos[dropPos.length - 1]);
-        const data = [...this.state.list];
-
-        /* const loop = (data, key, callback) => {
-             for (let i = 0; i < data.length; i++) {
-                 if (`${data[i]._id}` === key && data[i].list === undefined) {
-                     return callback(data[i], i, data);
-                 }
-                 if (data[i].list) {
-                     loop(data[i].list, key, callback);
-                 }
-             }
-         };
-
-         const loopCat = (data, key, callback) => {
-             for (let i = 0; i < data.length; i++) {
-                 if (`cat_${data[i]._id}` === key) {
-                     return callback(data[i], i, data);
-                 }
-                 if (data[i].children) {
-                     loopCat(data[i].children, key, callback);
-                 }
-             }
-         };*/
-
-
-        // 0 cat to api
-        // 1 cat to cat
-        // 2 api to cat
-        // 3 api to api
-        /*        let dragType = 'api_to_api';
-                if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat") === -1) {
-                    dragType = 'cat_to_api';
-                } else if (dragKey.indexOf("cat_") !== -1 && dropKey.indexOf("cat_") !== -1) {
-                    dragType = 'cat_to_cat';
-                } else if (dragKey.indexOf("cat_") === -1 && dropKey.indexOf("cat_") !== -1) {
-                    dragType = 'api_to_cat';
-                }
-
-                console.log('> dragType', dragType)
-                console.log('> dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex');
-                console.log(dragKey, dropKey, dragPos, dropPos, dragIndex, dropIndex, dropCatIndex)
-                console.log('- data', data)
-                */
-
-        // Find dragObject
-        /*        let dragObj;
-                if (dragKey.indexOf("cat_") === -1) {
-                    loop(data, dragKey, (item, index, arr) => {
-                        arr.splice(index, 1);
-                        dragObj = item;
-                    });
-                } else {
-                    loopCat(data, dragKey, (item, index, arr) => {
-                        arr.splice(index, 1);
-                        dragObj = item;
-                    });
-                }
-
-                let dropObj;
-                if (dropKey.indexOf("cat_") === -1) {
-                    loop(data, dropKey, (item, index, arr) => {
-                        arr.splice(index, 1);
-                        dropObj = item;
-                    });
-                } else {
-                    loopCat(data, dropKey, (item, index, arr) => {
-                        arr.splice(index, 1);
-                        dropObj = item;
-                    });
-                }
-
-                let changes;
-                switch (dragType) {
-                    case "cat_to_api": {
-                        axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj.catid}).then();
-                        break;
-                    }
-                    case "cat_to_cat": {
-                        if (dragObj.parent_id === dropObj.parent_id) {
-                            changes = arrayChangeIndex(list, dragIndex - 1, dropIndex - 1);
-                            axios.post('/api/interface/up_cat_index', changes).then();
-                        } else {
-                            axios.post('/api/interface/up_cat', {catid: dragObj._id, parent_id: dropObj._id}).then();
-                        }
-                        break;
-                    }
-                    case "api_to_cat": {
-                        axios.post('/api/interface/up', {id: dragKey, catid: dropObj._id});
-                        break;
-                    }
-                    default: {
-                        // 同一个分类下的接口交换顺序
-                        let colList = (list[dropCatIndex].children)[dropCatIndex].list;
-                        changes = arrayChangeIndex(colList, dragIndex, dropIndex);
-                        axios.post('/api/interface/up_index', changes).then();
-                    }
-                }
-                this.props.fetchInterfaceMenuTree(this.props.projectId);*/
-
     };
 
-    // 数据过滤
-    filterList = list => {
-        let that = this;
-        let arr = [];
-        let menuList = this.filterData(list, arr, that.state.filter);
-        return {menuList, arr};
-    };
-
-    // 递归搜索过滤
-    filterData = (data, ids, searchVal) => {
-        let _data = [].concat(data);
-        // 匹配接口
-        _data.forEach(menu => {
-            if (menu.list) {
-                menu.list = menu.list.filter(itf => {
-                    if (itf.title.indexOf(searchVal) > -1) {
-                        ids.push('cat_' + itf.catid);
-                        return true
-                    }
-                })
+    // 搜索过滤
+    onFilter = e => {
+        const {value} = e.target;
+        const {menuMap, interfaceList} = this.state;
+        let expandKeys = new Set();
+        interfaceList.filter(item => {
+            const title = item.title
+            if (title.toLowerCase().indexOf(value.toLowerCase()) > -1) {
+                let parents = this.getParents(item, menuMap);
+                parents.forEach(id => {
+                    expandKeys.add(id)
+                });
             }
-            // 递归子菜单
-            if (menu.children) this.filterData(menu.children, ids, searchVal);
         })
-        return _data;
+        this.setState({
+            filter: e.target.value,
+            list: JSON.parse(JSON.stringify(this.props.list)),
+            autoExpandParent: true,
+            expands: Array.from(expandKeys),
+        });
+    };
+
+    getParents = (item, dataMap) => {
+        let _dataMap = new Map(dataMap);
+        let parents = [];
+        if (item) {
+            let parentId = item.catid || item.parent_id;
+            if (parentId) {
+                parents.push('cat_' + parentId);
+                parents = parents.concat(this.getParents(_dataMap.get(parentId), _dataMap));
+                _dataMap = _dataMap.delete(parentId)//找完了，删掉
+            }
+        }
+        return parents;
     }
 
+
+    // 获取接口目录的平铺结构
+    getDataList = (treeData) => {
+        let menuList = [], interfaceList = [];
+        if (treeData) {
+            treeData.forEach(item => {
+                menuList.push(item);
+                if (item.children) {
+                    const {menuList: _menuList, interfaceList: _interfaceList} = this.getDataList(item.children);
+                    menuList = menuList.concat(_menuList);
+                    interfaceList = interfaceList.concat(_interfaceList);
+                }
+                if (item.list) interfaceList = interfaceList.concat(item.list)
+            })
+        }
+        return {menuList, interfaceList};
+    }
+
+
     render() {
+
         const projectId = this.props.projectId;
         const matchParams = this.props.match.params;
-        const {curCatdata, autoExpandParent} = this.state;
+        const {curCatdata, expands, autoExpandParent} = this.state;
+        const searchBox = (<div className="interface-filter">
+            <Input onChange={this.onFilter} value={this.state.filter} placeholder="搜索接口"/>
+            <Button
+                type="primary"
+                onClick={e => {
+                    e.stopPropagation();
+                    this.setState({
+                        curCatdata: {}
+                    })
+                    this.changeModal('add_cat_modal_visible', true);
+                }}
+                className="btn-filter"
+            >
+                添加分类
+            </Button>
+            {this.state.visible ? (
+                <Modal
+                    title="添加接口"
+                    visible={this.state.visible}
+                    onCancel={() => this.changeModal('visible', false)}
+                    footer={null}
+                    className="addcatmodal"
+                    maskClosable={false}
+                >
+                    <AddInterfaceForm
+                        projectId={projectId}
+                        catdata={this.props.curProject.cat}
+                        catid={this.state.curCatid}
+                        onCancel={() => this.changeModal('visible', false)}
+                        onSubmit={this.handleAddInterface}
+                    />
+                </Modal>
+            ) : (
+                ''
+            )}
 
-        // let menuList = this.state.list;
-        const searchBox = (
-            <div className="interface-filter">
-                <Input onChange={this.onFilter} value={this.state.filter} placeholder="搜索接口"/>
-                <Button
-                    type="primary"
-                    onClick={e => {
-                        e.stopPropagation();
+            {this.state.add_cat_modal_visible ? (
+                <Modal
+                    title={'添加分类'}
+                    visible={this.state.add_cat_modal_visible}
+                    onCancel={() => {
                         this.setState({
                             curCatdata: {}
                         })
-                        this.changeModal('add_cat_modal_visible', true);
+                        this.changeModal('add_cat_modal_visible', false);
                     }}
-                    className="btn-filter"
+                    footer={null}
+                    className="addcatmodal"
+                    maskClosable={false}
                 >
-                    添加分类
-                </Button>
-                {this.state.visible ? (
-                    <Modal
-                        title="添加接口"
-                        visible={this.state.visible}
-                        onCancel={() => this.changeModal('visible', false)}
-                        footer={null}
-                        className="addcatmodal"
-                        maskClosable={false}
-                    >
-                        <AddInterfaceForm
-                            projectId={projectId}
-                            catdata={this.props.curProject.cat}
-                            catid={this.state.curCatid}
-                            onCancel={() => this.changeModal('visible', false)}
-                            onSubmit={this.handleAddInterface}
-                        />
-                    </Modal>
-                ) : (
-                    ''
-                )}
+                    <AddInterfaceCatForm
+                        type={'add'}
+                        projectId={projectId}
+                        catdata={curCatdata}
+                        onCancel={() => this.changeModal('add_cat_modal_visible', false)}
+                        onSubmit={this.handleAddInterfaceCat}
+                    />
+                </Modal>
+            ) : (
+                ''
+            )}
 
-                {this.state.add_cat_modal_visible ? (
-                    <Modal
-                        title={'添加分类'}
-                        visible={this.state.add_cat_modal_visible}
-                        onCancel={() => {
-                            this.setState({
-                                curCatdata: {}
-                            })
-                            this.changeModal('add_cat_modal_visible', false);
-                        }}
-                        footer={null}
-                        className="addcatmodal"
-                        maskClosable={false}
-                    >
-                        <AddInterfaceCatForm
-                            type={'add'}
-                            projectId={projectId}
-                            catdata={curCatdata}
-                            onCancel={() => this.changeModal('add_cat_modal_visible', false)}
-                            onSubmit={this.handleAddInterfaceCat}
-                        />
-                    </Modal>
-                ) : (
-                    ''
-                )}
+            {this.state.add_subcat_modal_visible ? (
+                <Modal
+                    title={'添加子分类'}
+                    visible={this.state.add_subcat_modal_visible}
+                    onCancel={() => {
+                        this.setState({
+                            curCatdata: {}
+                        })
+                        this.changeModal('add_subcat_modal_visible', false);
+                    }}
+                    footer={null}
+                    className="addcatmodal"
+                    maskClosable={false}
+                >
+                    <AddInterfaceCatForm
+                        type={'addsub'}
+                        projectId={projectId}
+                        catdata={curCatdata}
+                        onCancel={() => this.changeModal('add_subcat_modal_visible', false)}
+                        onSubmit={this.handleAddInterfaceCat}
+                    />
+                </Modal>
+            ) : (
+                ''
+            )}
 
-                {this.state.add_subcat_modal_visible ? (
-                    <Modal
-                        title={'添加子分类'}
-                        visible={this.state.add_subcat_modal_visible}
-                        onCancel={() => {
-                            this.setState({
-                                curCatdata: {}
-                            })
-                            this.changeModal('add_subcat_modal_visible', false);
-                        }}
-                        footer={null}
-                        className="addcatmodal"
-                        maskClosable={false}
-                    >
-                        <AddInterfaceCatForm
-                            type={'addsub'}
-                            projectId={projectId}
-                            catdata={curCatdata}
-                            onCancel={() => this.changeModal('add_subcat_modal_visible', false)}
-                            onSubmit={this.handleAddInterfaceCat}
-                        />
-                    </Modal>
-                ) : (
-                    ''
-                )}
-
-                {this.state.change_cat_modal_visible ? (
-                    <Modal
-                        title="修改分类"
-                        visible={this.state.change_cat_modal_visible}
+            {this.state.change_cat_modal_visible ? (
+                <Modal
+                    title="修改分类"
+                    visible={this.state.change_cat_modal_visible}
+                    onCancel={() => this.changeModal('change_cat_modal_visible', false)}
+                    footer={null}
+                    className="addcatmodal"
+                    maskClosable={false}
+                >
+                    <AddInterfaceCatForm
+                        type={'edit'}
+                        projectId={projectId}
+                        catdata={curCatdata}
                         onCancel={() => this.changeModal('change_cat_modal_visible', false)}
-                        footer={null}
-                        className="addcatmodal"
-                        maskClosable={false}
-                    >
-                        <AddInterfaceCatForm
-                            type={'edit'}
-                            projectId={projectId}
-                            catdata={curCatdata}
-                            onCancel={() => this.changeModal('change_cat_modal_visible', false)}
-                            onSubmit={this.handleChangeInterfaceCat}
-                        />
-                    </Modal>
-                ) : (
-                    ''
-                )}
-            </div>
-        );
-        const defaultExpandedKeys = () => {
-            const {router, inter, list} = this.props,
-                rNull = {expands: [], selects: []};
-            if (list.length === 0) {
-                return rNull;
-            }
-            if (router) {
-                if (!isNaN(router.params.actionId)) {
-                    if (!inter || !inter._id) {
-                        return rNull;
-                    }
-                    return {
-                        expands: this.state.expands ? this.state.expands : ['cat_' + inter.catid],
-                        selects: [inter._id + '']
-                    };
-                } else {
-                    let catid = router.params.actionId.substr(4);
-                    return {
-                        expands: this.state.expands ? this.state.expands : ['cat_' + catid],
-                        selects: ['cat_' + catid]
-                    };
-                }
-            } else {
-                return {
-                    expands: this.state.expands ? this.state.expands : ['cat_' + list[0]._id],
-                    selects: ['root']
-                };
-            }
-        };
-
-        const renderInterfaceList = item => {
-            return (
-                <TreeNode
-                    title={
-                        <div
-                            className="container-title"
-                            onMouseEnter={() => this.enterItem(item)}
-                            onMouseLeave={this.leaveItem}
-                        >
-                            <Link
-                                className="interface-item"
-                                onClick={e => e.stopPropagation()}
-                                to={'/project/' + matchParams.id + '/interface/api/' + item._id}
-                            >
-                                {item.title}
-                            </Link>
-                            <div className="btns">
-                                <Tooltip title="删除接口">
-                                    <Icon
-                                        type="delete"
-                                        className="interface-delete-icon"
-                                        onClick={e => {
-                                            e.stopPropagation();
-                                            this.showConfirm(item);
-                                        }}
-                                        style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
-                                    />
-                                </Tooltip>
-                                <Tooltip title="复制接口">
-                                    <Icon
-                                        type="copy"
-                                        className="interface-delete-icon"
-                                        onClick={e => {
-                                            e.stopPropagation();
-                                            this.copyInterface(item._id);
-                                        }}
-                                        style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
-                                    />
-                                </Tooltip>
-                            </div>
-                            {/*<Dropdown overlay={menu(item)} trigger={['click']} onClick={e => e.stopPropagation()}>
-            <Icon type='ellipsis' className="interface-delete-icon" style={{ opacity: this.state.delIcon == item._id ? 1 : 0 }}/>
-          </Dropdown>*/}
-                        </div>
-                    }
-                    key={'' + item._id}
-                />
-            );
-        };
+                        onSubmit={this.handleChangeInterfaceCat}
+                    />
+                </Modal>
+            ) : (
+                ''
+            )}
+        </div>);
 
         const renderTreeNode = items => {
+            const searchVal = this.state.filter;
             return items.map(item => {
+                const title = (<span>{item.name}</span>);
                 return (
+                    searchVal && this.state.expands.indexOf('cat_' + item._id) < 0 ? null :
+                        <TreeNode
+                            title={
+                                <div
+                                    className="container-title"
+                                    onMouseEnter={() => this.enterItem(item)}
+                                    onMouseLeave={this.leaveItem}
+                                >
+                                    <Link
+                                        className="interface-item"
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            this.changeExpands();
+                                        }}
+                                        to={'/project/' + matchParams.id + '/interface/api/cat_' + item._id}
+                                    >
+                                        <Icon type="folder-open" style={{marginRight: 5}}/>
+                                        {title}
+                                    </Link>
+                                    <div className="btns">
+                                        <Tooltip title="删除分类">
+                                            <Icon
+                                                type="delete"
+                                                className="interface-delete-icon"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    this.showDelCatConfirm(item._id);
+                                                }}
+                                                style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip title="修改分类">
+                                            <Icon
+                                                type="edit"
+                                                className="interface-delete-icon"
+                                                style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    this.setState({
+                                                        curCatdata: item
+                                                    });
+                                                    this.changeModal('change_cat_modal_visible', true);
+                                                }}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip title="添加子分类">
+                                            <Icon
+                                                type="addfolder"
+                                                className="interface-delete-icon"
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    this.setState({
+                                                        curCatdata: item
+                                                    })
+                                                    this.changeModal('add_subcat_modal_visible', true);
+                                                }}
+                                                style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
+                                            />
+                                        </Tooltip>
+                                        <Tooltip title="添加接口">
+                                            <Icon
+                                                type="plus"
+                                                className="interface-delete-icon"
+                                                style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
+                                                onClick={e => {
+                                                    e.stopPropagation();
+                                                    this.changeModal('visible', true);
+                                                    this.setState({
+                                                        curCatid: item._id
+                                                    });
+                                                }}
+                                            />
+                                        </Tooltip>
+                                    </div>
+                                    {/*<Dropdown overlay={menu(item)} trigger={['click']} onClick={e => e.stopPropagation()}>
+              <Icon type='ellipsis' className="interface-delete-icon" />
+            </Dropdown>*/}
+                                </div>
+                            }
+                            key={'cat_' + item._id}
+                            className={`interface-item-nav ${(item.list.length || (item.children && item.children.length)) ? '' : 'cat_switch_hidden'}`}
+                        >
+                            {item.children ? renderTreeNode(item.children) : ''}
+                            {item.list.map(renderInterfaceList)}
+                        </TreeNode>
+                );
+            })
+        }
+
+        const renderInterfaceList = item => {
+            const searchVal = this.state.filter;
+            const index = item.title.toLowerCase().indexOf(searchVal.toLowerCase());
+            const beforeStr = item.title.substr(0, index);
+            const middleStr = item.title.substr(index, searchVal.length);
+            const afterStr = item.title.substr(index + searchVal.length);
+            const title = index > -1
+                ? (<span>{beforeStr}<span style={{color: '#ff5500'}}>{middleStr}</span>{afterStr}</span>)
+                : (<span>{item.title}</span>);
+            return (
+                searchVal && index < 0 ? null :
                     <TreeNode
                         title={
                             <div
@@ -649,95 +595,43 @@ class InterfaceMenu extends Component {
                             >
                                 <Link
                                     className="interface-item"
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        this.changeExpands();
-                                    }}
-                                    to={'/project/' + matchParams.id + '/interface/api/cat_' + item._id}
+                                    onClick={e => e.stopPropagation()}
+                                    to={'/project/' + matchParams.id + '/interface/api/' + item._id}
                                 >
-                                    <Icon type="folder-open" style={{marginRight: 5}}/>
-                                    {item.name}
+                                    {title}
                                 </Link>
                                 <div className="btns">
-                                    <Tooltip title="删除分类">
+                                    <Tooltip title="删除接口">
                                         <Icon
                                             type="delete"
                                             className="interface-delete-icon"
                                             onClick={e => {
                                                 e.stopPropagation();
-                                                this.showDelCatConfirm(item._id);
+                                                this.showConfirm(item);
                                             }}
                                             style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
                                         />
                                     </Tooltip>
-                                    <Tooltip title="修改分类">
+                                    <Tooltip title="复制接口">
                                         <Icon
-                                            type="edit"
-                                            className="interface-delete-icon"
-                                            style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                this.setState({
-                                                    curCatdata: item
-                                                });
-                                                this.changeModal('change_cat_modal_visible', true);
-                                            }}
-                                        />
-                                    </Tooltip>
-                                    <Tooltip title="添加子分类">
-                                        <Icon
-                                            type="addfolder"
+                                            type="copy"
                                             className="interface-delete-icon"
                                             onClick={e => {
                                                 e.stopPropagation();
-                                                this.setState({
-                                                    curCatdata: item
-                                                })
-                                                this.changeModal('add_subcat_modal_visible', true);
+                                                this.copyInterface(item._id);
                                             }}
                                             style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
-                                        />
-                                    </Tooltip>
-                                    <Tooltip title="添加接口">
-                                        <Icon
-                                            type="plus"
-                                            className="interface-delete-icon"
-                                            style={{display: this.state.delIcon == item._id ? 'block' : 'none'}}
-                                            onClick={e => {
-                                                e.stopPropagation();
-                                                this.changeModal('visible', true);
-                                                this.setState({
-                                                    curCatid: item._id
-                                                });
-                                            }}
                                         />
                                     </Tooltip>
                                 </div>
-                                {/*<Dropdown overlay={menu(item)} trigger={['click']} onClick={e => e.stopPropagation()}>
-              <Icon type='ellipsis' className="interface-delete-icon" />
-            </Dropdown>*/}
                             </div>
                         }
-                        key={'cat_' + item._id}
-                        className={`interface-item-nav ${(item.list.length || (item.children && item.children.length)) ? '' : 'cat_switch_hidden'}`}
-                    >
-                        {item.children ? renderTreeNode(item.children) : ''}
-                        {item.list.map(renderInterfaceList)}
-                    </TreeNode>
-                );
-            })
-        }
+                        key={'' + item._id}
+                    />
+            );
+        };
 
-        let currentKes = defaultExpandedKeys();
-        let menuList;
-        if (this.state.filter) {
-            let res = this.filterList(this.state.list);
-            menuList = res.menuList;
-            currentKes.expands = res.arr;
-            console.log('currentKes.expands',  currentKes.expands)
-        } else {
-            menuList = this.state.list;
-        }
+        let menuList = this.state.list;
 
         return (
             <div>
@@ -749,9 +643,8 @@ class InterfaceMenu extends Component {
                     >
                         <Tree
                             className="interface-list"
-                            defaultExpandAll
-                            expandedKeys={currentKes.expands}
-                            selectedKeys={currentKes.selects}
+                            defaultExpandAll={false}
+                            expandedKeys={expands}
                             onSelect={this.onSelect}
                             onExpand={this.onExpand}
                             draggable={false}

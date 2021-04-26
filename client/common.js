@@ -264,3 +264,29 @@ exports.buildTree = (list, id, parentId) => {
   })
   return cacheObj;
 }
+
+// 递归遍历树，形成平铺list结构
+exports.tree2list = (treeData) => {
+  let listData = []
+  if(treeData){
+    treeData.forEach(item=>{
+      listData.push(item);
+      listData = listData.concat(this.tree2list(item.children));
+    })
+  }
+  return listData;
+}
+
+// 递归遍历树，找到某一菜单的所有下级菜单（包括其自身）
+exports.getChildren = (treeNode) => {
+  let allChildren = [];
+  if(treeNode) {
+    allChildren.push(treeNode._id)
+    if (treeNode.children) {
+      treeNode.children.forEach(child => {
+        allChildren = allChildren.concat(this.getChildren(child))
+      })
+    }
+  }
+  return allChildren;
+}

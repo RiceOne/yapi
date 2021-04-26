@@ -85,7 +85,7 @@ export default class ProjectInterfaceSync extends Component {
             if (!err) {
                 let assignValue = Object.assign(params, values);
                 this.setState({saveLoading: true})
-                if(await this.saveValidSwaggerUrl(assignValue.sync_json_url)) {
+                if (await this.saveValidSwaggerUrl(assignValue.sync_json_url)) {
                     await axios.post('/api/plugin/autoSync/save', assignValue).then(res => {
                         if (res.data.errcode === 0) {
                             message.success('保存成功');
@@ -114,7 +114,7 @@ export default class ProjectInterfaceSync extends Component {
         callback()
     }
 
-    saveValidSwaggerUrl = async(url) => {
+    saveValidSwaggerUrl = async (url) => {
         console.log('url', url)
         if (!url) return false;
         if (this.state.sync_data && this.state.sync_data.is_sync_open) {
@@ -142,22 +142,22 @@ export default class ProjectInterfaceSync extends Component {
         this.getMenuTree();
 
         // 初始化选中第一条
-       /* this.setState({
-            sync_data: this.state.env[0],
-            currentKey: 0
-        });*/
+        /* this.setState({
+             sync_data: this.state.env[0],
+             currentKey: 0
+         });*/
     }
 
     async getSyncData() {
         let projectId = this.props.projectMsg._id;
         let result = await axios.get('/api/plugin/autoSync/get?project_id=' + projectId);
         if (result.data.errcode === 0) {
-            if (result.data.data) {
+            if (result.data.data && result.data.data.length > 0) {
                 this.setState({
                     //sync_data: result.data.data
                     env: result.data.data,
                     // 默认选中第一行
-                    sync_data:  result.data.data[0],
+                    sync_data: result.data.data[0],
                     currentKey: 0
                 })
             }
@@ -409,12 +409,26 @@ export default class ProjectInterfaceSync extends Component {
                                             )}
                                         </FormItem>
 
-                                        <FormItem {...formItemLayout} label="项目的swagger json地址">
+                                        <FormItem {...formItemLayout} label={
+                                            <span className="label">
+                项目的Swagger Json地址&nbsp;
+                                                <Tooltip
+                                                    title={
+                                                        <div>
+                                                            <p>需输入正确的URL网址，以http://或https://开头，且能请求到Swagger的Json格式数据</p>
+                                                        </div>
+                                                    }
+                                                >
+                  <Icon type="question-circle-o"/>
+                </Tooltip>{' '}
+                                            </span>
+                                        }>
                                             {getFieldDecorator('sync_json_url', {
                                                 rules: [
                                                     {
                                                         required: true,
-                                                        message: '输入swagger地址'
+                                                        message: '输入正确的swagger地址',
+                                                        pattern: /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/
                                                     }
                                                 ],
                                                 validateTrigger: 'onBlur',

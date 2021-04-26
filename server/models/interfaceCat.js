@@ -56,7 +56,7 @@ class interfaceCat extends baseModel {
       .find({
         project_id: project_id
       })
-      .sort({ order: 1, _id: 1 })
+      .sort({ order: 1 })
       .exec();
   }
 
